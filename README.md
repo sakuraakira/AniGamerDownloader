@@ -8,7 +8,9 @@
 
 ## 參考文獻
 
+
 連結的取得及影片解碼均參考 [c0re100/BahamutAnimeDownloader](https://github.com/c0re100/BahamutAnimeDownloader/)
+
 
 
 ## 安裝方法
