@@ -24,6 +24,9 @@ namespace Model
 
         public Boolean IsIng { set; get; } = false;
 
+        Boolean _IsStop = false;
+        public Boolean IsStop { get { return _IsStop; } set { _IsStop = value; TriggerUpdate("IsStop"); } }
+
         public String SN { set; get; }
 
         public String Url { set; get; }

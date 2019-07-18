@@ -182,8 +182,11 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <ItemContainerTemplate >
                                             <Grid Width="238">
-                                                <ProgressBar Background="Transparent" BorderThickness="0" Maximum="{Binding BarMax,Mode=OneWay}" Value="{Binding Bar , Mode=OneWay}" />
+                                                <ProgressBar Background="Transparent" BorderThickness="0" Maximum="{Binding BarMax,Mode=OneWay}" Value="{Binding Bar,Mode=OneWay}" />
                                                 <TextBlock Text="{Binding Status}" VerticalAlignment="Center"  HorizontalAlignment="Center"/>
+                                                <Button Margin="0,0,15,0" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource Button_底圖}" Visibility="{Binding IsStop,Mode=OneWay,Converter={StaticResource BooleanToVisibility}}" Click="Button_Click_1">
+                                                    <Image Height="24" Width="24" Source="/AniGamer;component/Image/重新下載.png" />
+                                                </Button>
                                             </Grid >
                                         </ItemContainerTemplate>
                                     </DataGridTemplateColumn.CellTemplate>

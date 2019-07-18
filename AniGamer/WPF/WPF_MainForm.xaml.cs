@@ -128,6 +128,7 @@ namespace WPF
                     {
                         Border_遮幕.Visibility = Visibility.Visible;
                         WPF_文件設定 WPF = new WPF_文件設定();
+                        //WPF_IP列表 WPF = new WPF_IP列表();
                         WPF.ShowDialog();
                         Border_遮幕.Visibility = Visibility.Collapsed;
                         break;
@@ -257,6 +258,11 @@ namespace WPF
                 }
 
                 Model.BahaModel Baha = new Model.BahaModel();
+                //System.Net.ServicePointManager.Expect100Continue = false;
+                // WebRequest.Proxy = new System.Net.WebProxy("59.127.168.43", 3128);
+                //WebRequest.Proxy.UseDefaultCredentials = true;
+                //WebRequest.Proxy.Credentials =  new System.Net.NetworkCredential("vpn", "");
+
                 Baha.SN = Sn.ToString();
                 Baha.Name = WebRequest.GetTitle(Baha.SN).Split('-')[0];
                 Baha.Status = "排隊中...";
@@ -279,7 +285,7 @@ namespace WPF
         {
             if (VideoList.Where(I => I.IsIng).Count() > 0) return;
 
-            var q = VideoList.Where(I => !I.IsOk);
+            var q = VideoList.Where(I => !I.IsOk && !I.IsStop);
             if (q.Count() > 0)
             {
                 Model.BahaModel Baha = q.OrderBy(I => I.No).First();
@@ -292,84 +298,124 @@ namespace WPF
 
         void Main(object value)
         {
+
             Model.BahaModel Baha = (Model.BahaModel)value;
             Baha.IsIng = true;
-            Baha.DeviceId = WebRequest.GetDeviceId(Baha.SN);
-            if(Baha.DeviceId == "")
-            {
-                Baha.Status = "無法取得DeviceId";
-                Baha.IsIng = false;
-                處理影片();
-                return;
-            }
-
-            if (!WebRequest.GainAccess(Baha.DeviceId, Baha.SN))
-            {
-                Baha.Status = "無法取得GainAccess";
-                Baha.IsIng = false;
-                處理影片();
-                return;
-            }
-            WebRequest.Unlock(Baha.SN);
-            WebRequest.CheckLock(Baha.DeviceId, Baha.SN);
-            WebRequest.Unlock(Baha.SN);
-            WebRequest.Unlock(Baha.SN);
-            WebRequest.StartAd(Baha.SN);
-            for (int i = 8; i > 0; i--)
-            {
-                Baha.Status = "等待" + i.ToString() + "秒跳過廣告...";
-                if (!VideoList.Contains(Baha))
-                {
-                    Baha.IsIng = false;
-                    處理影片();
-                    return;
-                }
-                Thread.Sleep(1000);
-            }
-            WebRequest.SkipAd(Baha.SN);
-
-            Baha.Status = "解析Key";
-            WebRequest.VideoStart(Baha.SN);
-            WebRequest.CheckNoAd(Baha.DeviceId, Baha.SN);
-            Baha.Url = WebRequest.GetM3U8(Baha.DeviceId, Baha.SN);
-            Baha.Res = WebRequest.ParseMasterList(Baha.Url, Baha.SN,Baha.Quality);
-            if(Baha.Res == "")
-            {
-                this.Dispatcher.BeginInvoke(new Action(()=> { WPFMessageBox.Show("資源清單裡找不到" + Baha.Quality + "p 畫質的影片"); }));
-                Baha.IsIng = false;
-                處理影片();
-                return;
-            }
-
-            Baha.Tmp = "Tmp\\tmp" + Baha.SN;
-            String Path = AppDomain.CurrentDomain.BaseDirectory + Baha.Tmp;
-
-            if (!Directory.Exists(Path))
-            {
-                Directory.CreateDirectory(Path);
-            }
 
             try
             {
-                FileStream file = new FileStream(Path + "\\" + Baha.Res, FileMode.Create);
-                Baha.ChuckList = new List<string>();
-                string KeyUri = WebRequest.DownloadM3U8(Baha.Url.Replace("playlist.m3u8", Baha.Res), Baha.SN, file, Baha.ChuckList);
+                Baha.DeviceId = WebRequest.GetDeviceId(Baha.SN);
+                if (Baha.DeviceId == "")
+                {
+                    Baha.Status = "無法取得DeviceId";
+                    Baha.IsIng = false;
+                    Baha.IsStop = true;
+                    處理影片();
+                    return;
+                }
 
-                FileStream fileKey = new FileStream(Path + "\\" + Baha.Res + "key", FileMode.Create);
-                WebRequest.Download(KeyUri, Baha.SN, fileKey);
+                if (!WebRequest.GainAccess(Baha.DeviceId, Baha.SN))
+                {
+                    Baha.Status = "無法取得GainAccess";
+                    Baha.IsIng = false;
+                    Baha.IsStop = true;
+                    處理影片();
+                    return;
+                }
+                WebRequest.Unlock(Baha.SN);
+                WebRequest.CheckLock(Baha.DeviceId, Baha.SN);
+                WebRequest.Unlock(Baha.SN);
+                WebRequest.Unlock(Baha.SN);
+                WebRequest.StartAd(Baha.SN);
+                for (int i = 8; i > 0; i--)
+                {
+                    Baha.Status = "等待" + i.ToString() + "秒跳過廣告...";
+                    if (!VideoList.Contains(Baha))
+                    {
+                        處理影片();
+                        return;
+                    }
+                    Thread.Sleep(1000);
+                }
+                WebRequest.SkipAd(Baha.SN);
+
+                Baha.Status = "解析Key";
+                WebRequest.VideoStart(Baha.SN);
+                WebRequest.CheckNoAd(Baha.DeviceId, Baha.SN);
+                Baha.Url = WebRequest.GetM3U8(Baha.DeviceId, Baha.SN);
+                Baha.Res = WebRequest.ParseMasterList(Baha.Url, Baha.SN, Baha.Quality);
+                if (Baha.Res == "")
+                {
+                    this.Dispatcher.BeginInvoke(new Action(() => { WPFMessageBox.Show("資源清單裡找不到" + Baha.Quality + "p 畫質的影片"); }));
+                    Baha.IsIng = false;
+                    Baha.IsStop = true;
+                    處理影片();
+                    return;
+                }
+
+
+                Baha.Tmp = "Tmp\\tmp" + Baha.SN;
+                String Path = AppDomain.CurrentDomain.BaseDirectory + Baha.Tmp;
+
+                if (!Directory.Exists(Path))
+                {
+                    Directory.CreateDirectory(Path);
+                }
+
+
+                if (Baha.ChuckList == null || !File.Exists(Path + "\\" + Baha.Res)) // 如果己經有Chuck 就不用再次下載
+                {
+                    FileStream file = new FileStream(Path + "\\" + Baha.Res, FileMode.Create);
+                    Baha.ChuckList = new List<string>();
+                    string KeyUri = WebRequest.DownloadM3U8(Baha.Url.Replace("playlist.m3u8", Baha.Res), Baha.SN, file, Baha.ChuckList);
+
+                    FileStream fileKey = new FileStream(Path + "\\" + Baha.Res + "key", FileMode.Create);
+                    WebRequest.Download(KeyUri, Baha.SN, fileKey);
+                }
+
 
                 String prefix = Baha.Url.Remove(Baha.Url.IndexOf("playlist.m3u8"));
                 Baha.BarMax = Baha.ChuckList.Count;
+                Baha.Bar = 0;
+
+                String[] Files = Directory.GetFiles(Path);
+
+                if (Files.Length > 3)
+                {
+                    Baha.ChuckList.Count();
+                    foreach (String file in Files)
+                    {
+                        if (!file.EndsWith(".ts")) continue;
+                        var q = Baha.ChuckList.Where(I => I.Split('?')[0] == System.IO.Path.GetFileName(file));
+                        if (q.Count() > 0)
+                        {
+                            Baha.ChuckList.Remove(q.First());
+                            Baha.Bar++;
+                        }
+
+                    }
+
+                }
+
                 foreach (string Chuck in Baha.ChuckList)
                 {
                     Baha.Bar++;
                     Baha.Status = string.Format("下載中 ({0}/{1})", Baha.Bar, Baha.BarMax);
                     FileStream ChuckFile = new FileStream(Path + "\\" + Chuck.Remove(Chuck.IndexOf("?token=")), FileMode.Create);
-                    WebRequest.Download(prefix + Chuck, Baha.SN, ChuckFile);
+                    if (!WebRequest.Download(prefix + Chuck, Baha.SN, ChuckFile))
+                    {
+                        Baha.IsIng = false;
+                        Baha.IsStop = true;
+                        this.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            WPFMessageBox.Show("網路異常...");
+                        }));
+                        return;
+                    }
+
                     if (!VideoList.Contains(Baha))
                     {
                         DeleteSrcFolder(Path);
-                        Baha.IsIng = false;
                         處理影片();
                         return;
                     }
@@ -384,23 +430,26 @@ namespace WPF
                 process.StartInfo = startInfo;
                 process.Start();
                 process.WaitForExit();
-
                 if (process != null)
                 {
                     process.Close();
-                    process.Dispose();
                 }
+
                 Baha.Status = "下載完成";
                 Baha.IsOk = true;
                 DeleteSrcFolder(Path);
             }
             catch
             {
-                this.Dispatcher.BeginInvoke(new Action(() => {
+                Baha.IsIng = false;
+                Baha.IsStop = true;
+                this.Dispatcher.BeginInvoke(new Action(() =>
+                {
                     WPFMessageBox.Show("下載中出現錯誤...");
                 }));
-                DeleteSrcFolder(Path);
+                return;
             }
+
             Baha.IsIng = false;
 
             處理影片();
@@ -454,6 +503,16 @@ namespace WPF
             xRoot.Add(xDir);
 
             xDoc.Save(Local.SetupFile);
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (DataGrid_清單.SelectedItem == null) return;
+
+            ((Button)sender).Visibility = Visibility.Collapsed;
+            var Baha = (Model.BahaModel)DataGrid_清單.SelectedItem;
+            Baha.IsStop = false;
+            處理影片();
         }
     }
 }

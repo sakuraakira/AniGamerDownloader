@@ -10,7 +10,7 @@
             <Setter Property="Foreground" Value="#4D4D4D"/>
         </Style>
     </Window.Resources>
-    <Grid Width="637" Height="262" Margin="10" >
+    <Grid Width="637" Height="362" Margin="10" >
         <Border x:Name="Border_背景" CornerRadius="5" BorderBrush="#b2b2b2"  BorderThickness="1" >
             <Border.Background>
                 <LinearGradientBrush EndPoint="1,0" StartPoint="0,1">
@@ -42,6 +42,17 @@
                     <Label Width="100" HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Padding="0,0,15,0" Content="下載位置" />
                     <TextBox x:Name="TB_Email" FontSize="16" HorizontalAlignment="Left" Width="399" Margin="0,0,0,0" Height="32" Style="{DynamicResource TextBox_Default}"/>
                     <Button Margin="10,0,0,0" Height="32" Width="68" VerticalAlignment="Center" Content="瀏覽" Style="{StaticResource BtnStyle_白}" Click="Button_Click_1"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Height="38" Margin="0,30,0,0">
+                    <Label HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Margin="10,0,0,0" Content="代理伺服器" />
+                    <ListBox x:Name="LB_啟用代理"/>
+                    <TextBlock VerticalAlignment="Center" Text="(必需使用台灣IP的伺服器)"></TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Height="38" Margin="0,10,0,0">
+                    <Label Width="100" HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Padding="0,0,15,0" Content="Proxy" />
+                    <TextBox x:Name="TB_ProxyIP" FontSize="16" HorizontalAlignment="Left" Width="289" Margin="0,0,0,0" Height="32" Style="{DynamicResource TextBox_Default}"/>
+                    <Label  HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Margin="10,0,0,0" Content="Port" />
+                    <TextBox x:Name="TB_ProxyPort" FontSize="16" HorizontalAlignment="Left" Width="89" Margin="0,0,0,0" Height="32" Style="{DynamicResource TextBox_Default}"/>
                 </StackPanel>
             </StackPanel>
             <Button x:Name="Btn_新增" Margin="0,0,0,23" HorizontalAlignment="Center" Width="125" VerticalAlignment="Bottom" FontSize="18" Content="確認" Style="{DynamicResource BtnStyle_綠}" Click="Button_Click"/>

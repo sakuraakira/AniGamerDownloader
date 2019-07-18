@@ -12,6 +12,8 @@ namespace Module
     {
         static public CookieContainer Cookies { set; get; }
 
+        static public WebProxy Proxy { set; get; }
+
         static HttpWebRequest NewRequset(String Url, string sn)
         {
             HttpWebRequest request = HttpWebRequest.Create(Url) as HttpWebRequest;
@@ -22,6 +24,12 @@ namespace Module
             request.Referer = @"https://ani.gamer.com.tw/animeVideo.php?sn=" + sn;
             request.Headers.Add("origin", @"https://ani.gamer.com.tw");
             request.CookieContainer = Cookies;
+
+            if(Proxy != null)
+            {
+                request.Proxy = Proxy;
+            }
+
             return request;
         }
 
@@ -43,18 +51,29 @@ namespace Module
 
         static public String GetTitle(String sn)
         {
-            WebClient x = new WebClient();
-            x.Encoding = Encoding.UTF8;
-            string html = x.DownloadString(@"https://ani.gamer.com.tw/animeVideo.php?sn=" + sn);
-            Regex rx = new Regex("<title>(.*)</title>");
-            MatchCollection m = rx.Matches(html);
-
-            if (m.Count > 0)
+            try
             {
-                return m[0].Value.Replace("<title>", "").Replace("</title>", "").Split('-')[0].Trim().Replace(" ",",");
+                WebClient x = new WebClient();
+                x.Encoding = Encoding.UTF8;
+
+                if (Proxy != null) x.Proxy = Proxy;
+                
+                string html = x.DownloadString(@"https://ani.gamer.com.tw/animeVideo.php?sn=" + sn);
+                Regex rx = new Regex("<title>(.*)</title>");
+                MatchCollection m = rx.Matches(html);
+
+                if (m.Count > 0)
+                {
+                    return m[0].Value.Replace("<title>", "").Replace("</title>", "").Split('-')[0].Trim().Replace(" ", ",");
+                }
+                else
+                    return sn;
             }
-            else
+            catch (Exception EX)
+            {
+                WPFMessageBox.Show("網路連線出現異常", EX.Message);
                 return sn;
+            }
         }
 
         static public String GetDeviceId(String sn)
@@ -275,23 +294,28 @@ namespace Module
             }
         }
 
-        static public void Download(String URL, String sn, FileStream file)
+        static public Boolean Download(String URL, String sn, FileStream file)
         {
-            HttpWebRequest request = NewRequset(URL, sn);
-            using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+            try
             {
-                Cookies = request.CookieContainer;
-                Stream dataStream = response.GetResponseStream();
-                byte[] buffer = new byte[1024];
-                int size = 0;
-                do
+                HttpWebRequest request = NewRequset(URL, sn);
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
                 {
-                    size = dataStream.Read(buffer, 0, buffer.Length);
-                    if (size > 0)
-                        file.Write(buffer, 0, size);
-                } while (size > 0);
-                file.Close();
+                    Cookies = request.CookieContainer;
+                    Stream dataStream = response.GetResponseStream();
+                    byte[] buffer = new byte[1024];
+                    int size = 0;
+                    do
+                    {
+                        size = dataStream.Read(buffer, 0, buffer.Length);
+                        if (size > 0)
+                            file.Write(buffer, 0, size);
+                    } while (size > 0);
+                    file.Close();
+                    return true;
+                }
             }
+            catch { return false; }
 
         }
 
