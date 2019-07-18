@@ -1,6 +1,6 @@
 # 簡介
 
-適用於巴哈姆特 [動畫瘋](https://ani.gamer.com.tw/) 
+適用於巴哈姆特 動畫瘋
 簡易使用的下載工具
 [AniGamerDownloader](https://github.com/sakuraakira/AniGamerDownloader/releases)
 
