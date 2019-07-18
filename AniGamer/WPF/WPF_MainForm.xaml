@@ -1,0 +1,225 @@
+﻿<Window x:Class="WPF.WPF_MainForm"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Top="0" Left="0" Foreground="#666666" MinHeight="600" MinWidth="960" Height="840" Width="1200" 
+        Title="動畫瘋下載器" Background="White" Loaded="Window_Loaded" WindowStyle="None" Closed="Window_Closed">
+    <Window.Resources>
+        <Style x:Key="Item_頁面標頭" TargetType="ListBoxItem">
+            <Setter Property="Height" Value="53"/>
+            <Setter Property="Width" Value="94"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#4D4D4D"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Label x:Name="LB"  Foreground="{TemplateBinding Foreground}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Content="{TemplateBinding Property=Content}"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="LB" Property="Background" Value="#4C934D2A"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="LB" Property="Foreground" Value="White"/>
+                                <Setter TargetName="LB" Property="Background" Value="#934D2A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid >
+        <Grid x:Name="Grid_主框" >
+            <Grid x:Name="Grid_標題框" Height="45" VerticalAlignment="Top" MouseLeftButtonDown="Grid_標題框_MouseLeftButtonDown">
+                <Grid.Background>
+                    <LinearGradientBrush EndPoint="1,0" StartPoint="0,1">
+                        <GradientStop Color="#FF13AEAB"/>
+                        <GradientStop Color="#FF117E96" Offset="1"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,0,5" Height="38" Source="/AniGamer;component/Image/crazy_logo.png"/>
+                <TextBlock Margin="130,0,0,5" Foreground="#Fcfcfc" VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Text="下 載 器" />
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,5">
+                    <Button x:Name="Btn_縮小" Style="{StaticResource Button_底圖}" Background="#60FFFFFF" Width="30" Height="30" Margin="0,0,10,0" Click="Button_Click" IsTabStop="False"  Cursor="Hand" >
+                        <Image Width="20" Height="20" Source="/AniGamer;component/Image/縮小.png"   />
+                    </Button>
+                    <Button x:Name="Btn_視窗" Margin="0,0,10,0" Style="{StaticResource Button_底圖}" Background="#60FFFFFF" Width="30" Height="30" IsTabStop="False" Click="Button_Click" Visibility="Collapsed">
+                        <Image Width="20" Height="20" Source="/AniGamer;component/Image/視窗化.png"   />
+                    </Button>
+                    <Button x:Name="Btn_放大" Margin="0,0,10,0" Style="{StaticResource Button_底圖}" Background="#60FFFFFF" Width="30" Height="30"  IsTabStop="False" Click="Button_Click">
+                        <Image Width="20" Height="20"  Source="/AniGamer;component/Image/放大.png"   />
+                    </Button>
+                    <Button x:Name="Btn_關閉" Margin="0,0,10,0" Style="{StaticResource Button_底圖}" Width="30" Height="30" IsTabStop="False" Click="Button_Click" Background="#CC9C0327">
+                        <Image Width="20" Height="20"  Source="/AniGamer;component/Image/關閉.png"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <Grid x:Name="Grid_下資訊框" VerticalAlignment="Bottom" Background="#FF126E7D" Height="33">
+                <Border Height="1" VerticalAlignment="Top" Background="#33A88E7B"/>
+                <TextBlock Margin="21,0,0,0" FontSize="15" Cursor="Hand" VerticalAlignment="Center"  HorizontalAlignment="Left" x:Name="TB_公司名稱" Text="巴哈姆特電玩資訊站" TextDecorations="Underline" MouseLeftButtonUp="TB_公司名稱_MouseRightButtonUp">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="White" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="Navy" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <StackPanel Margin="0,0,18,0" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_系統版本" Text="版本 Silverlight v1.0"/>
+                </StackPanel>
+            </Grid>
+            <Grid x:Name="Grid_拖曳框" Margin="0,45,0,33" >
+                <Image VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="630" Width="1200" Source="/AniGamer;component/Image/bahaLOGO.png" Stretch="UniformToFill"/>
+                <Grid x:Name="Grid_內容">
+                    <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Height="56" Width="600" Margin="32,20">
+                        <TextBox x:Name="TB_搜尋" FontSize="18"  Width="Auto" Margin="0,0,32,0" Height="44" Background="White" TextChanged="TB_搜尋_TextChanged" >
+                            <TextBox.Template>
+                                <ControlTemplate TargetType="TextBox">
+                                    <Border x:Name="border" BorderThickness="0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="5">
+                                        <Grid>
+                                            <TextBlock x:Name="TB_提示" Foreground="#C0C0C0" VerticalAlignment="Center" Margin="10,0,0,0" Text="網址、SN Code" Visibility="Collapsed"/>
+                                            <ScrollViewer VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{TemplateBinding Foreground}" x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                                        </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="Text" Value="">
+                                            <Setter TargetName="TB_提示" Property="Visibility" Value="Visible"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </TextBox.Template>
+                        </TextBox>
+                        <Button x:Name="Btn_消字" Style="{DynamicResource Button_底圖}" HorizontalAlignment="Right" Margin="0,0,46,0" Click="Button_Click">
+                            <Image Height="13" Width="13" Source="/AniGamer;component/Image/刪除打字.png"/>
+                        </Button>
+                        <Button x:Name="Btn_搜尋" Style="{DynamicResource Button_底圖}" HorizontalAlignment="Right" Margin="0,0,0,0" Click="Button_Click">
+                            <Image Height="21" Width="21" Source="/AniGamer;component/Image/搜尋.png"/>
+                        </Button>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Margin="0,20,10,0" Height="56" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <Button x:Name="Btn_設定" Width="98" Height="41" HorizontalAlignment="Right" Margin="0,0,20,0" VerticalAlignment="Center" Style="{DynamicResource BtnStyle_綠}" Click="Button_Click">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Image Width="20" Height="20" Source="/AniGamer;component/Image/發送訂單.png" />
+                                <TextBlock Margin="4,0,0,0" Text="設定"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="Btn_開啟" Width="158" Height="41" HorizontalAlignment="Right" Margin="0,0,20,0" VerticalAlignment="Center" Style="{DynamicResource BtnStyle_橙}" Click="Button_Click">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Image Width="20" Height="20" Source="/AniGamer;component/Image/文件夾.png" />
+                                <TextBlock Margin="4,0,0,0" Text="開啟文件夾"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                    <Grid x:Name="Grid_List" Margin="32,90,0,0">
+                        <DataGrid x:Name="DataGrid_清單" FontSize="16.667" BorderThickness="0" CanUserAddRows="False" CanUserReorderColumns="False" HeadersVisibility="Column" CanUserResizeColumns="False"  SelectionMode="Single" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" Focusable="False" CanUserResizeRows="False" GridLinesVisibility="None" Background="{x:Null}" IsTabStop="False" IsReadOnly="True" HorizontalAlignment="Left" Margin="0,0,0,0" Width="912">
+                            <DataGrid.Resources>
+                                <Style TargetType="ScrollBar">
+                                    <Setter Property="Template" Value="{StaticResource AppleStyleVerticalScrollBar}"/>
+                                </Style>
+                            </DataGrid.Resources>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Background" Value="{x:Null}"/>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="MinHeight" Value="39"/>
+                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="BorderBrush" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#FFE3DD"/>
+                                            <Setter Property="BorderBrush" Value="Transparent" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.CellStyle>
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn HeaderStyle="{StaticResource DataGrid_標題}" Width="41">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <ItemContainerTemplate >
+                                            <Grid Width="39"  Height="39">
+                                                <TextBlock Text="{Binding No}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            </Grid>
+                                        </ItemContainerTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn HeaderStyle="{StaticResource DataGrid_標題}" Header="SN" Width="121">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <ItemContainerTemplate >
+                                            <Grid Width="119" Height="39" >
+                                                <TextBlock Text="{Binding SN}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            </Grid>
+                                        </ItemContainerTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn HeaderStyle="{StaticResource DataGrid_標題}"  Header="影片標題" Width="304">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <ItemContainerTemplate >
+                                            <Grid Width="302" MinHeight="39" >
+                                                <TextBlock Text="{Binding Name}" Margin="10,5"  VerticalAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Left"/>
+                                            </Grid>
+                                        </ItemContainerTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="狀態" HeaderStyle="{StaticResource DataGrid_標題}" Width="240">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <ItemContainerTemplate >
+                                            <Grid Width="238">
+                                                <ProgressBar Background="Transparent" BorderThickness="0" Maximum="{Binding BarMax,Mode=OneWay}" Value="{Binding Bar , Mode=OneWay}" />
+                                                <TextBlock Text="{Binding Status}" VerticalAlignment="Center"  HorizontalAlignment="Center"/>
+                                            </Grid >
+                                        </ItemContainerTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="另存" HeaderStyle="{StaticResource DataGrid_標題}" Width="92">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <ItemContainerTemplate >
+                                            <Grid Width="90" Height="39" >
+                                                <Button x:Name="Btn_下載" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource Button_底圖}" Click="Button_Click" Visibility="{Binding IsOk,Mode=OneWay,Converter={StaticResource BooleanToVisibility}}">
+                                                    <Image Width="21" Height="24" Source="/AniGamer;component/Image/下載.png"  />
+                                                </Button>
+                                            </Grid>
+                                        </ItemContainerTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="刪除" HeaderStyle="{StaticResource DataGrid_標題}" Width="92">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <ItemContainerTemplate >
+                                            <Grid Width="90" Height="39">
+                                                <Button x:Name="Btn_刪除" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource Button_底圖}" Click="Button_Click">
+                                                    <Image Width="21" Height="24" Source="/AniGamer;component/Image/刪除.png"  />
+                                                </Button>
+                                            </Grid>
+                                        </ItemContainerTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                            </DataGrid.Columns>
+
+                        </DataGrid>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+        <Border x:Name="Border_遮幕" Background="Black" Opacity="0.4" Visibility="Collapsed"/>
+    </Grid>
+</Window>

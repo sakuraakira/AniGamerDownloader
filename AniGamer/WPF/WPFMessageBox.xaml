@@ -1,0 +1,79 @@
+﻿<Window x:Class="Module.WPFMessageBox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="{Binding Title}" ResizeMode="NoResize" 
+    ShowInTaskbar="False" SizeToContent="WidthAndHeight" Background="{x:Null}" Closed="Window_Closed"
+    WindowStartupLocation="CenterOwner" FontSize="18" MouseLeftButtonDown="Window_MouseLeftButtonDown" AllowsTransparency="True" WindowStyle="None" >
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="BorderBrush" Value="#7F8080"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+                        <GradientStop Color="#FFFFFFFF" Offset="0"/>
+                        <GradientStop Color="#FFFFFFFF" Offset="0.5"/>
+                        <GradientStop Color="#FFF2F2F2" Offset="0.51"/>
+                        <GradientStop Color="#FFF2F2F2" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#F0F0F0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid x:Name="Border" Width="444" Height="266" >
+        <Border x:Name="Border_背景" BorderBrush="#B2B2B2" CornerRadius="3" Margin="0,0,10,10" BorderThickness="1">
+            <Border.Background>
+                <LinearGradientBrush EndPoint="1,0" StartPoint="0,1">
+                    <GradientStop Color="#FF13AEAB"/>
+                    <GradientStop Color="#FF117E96" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Direction="320" Opacity="0.3" ShadowDepth="7" BlurRadius="8" Color="Black"></DropShadowEffect>
+            </Border.Effect>
+        </Border>
+        <Grid Margin="0,0,10,10" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="55" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="55" />
+            </Grid.RowDefinitions>
+            <Grid  Grid.Row="0" >
+                <TextBlock VerticalAlignment="Center" Padding="10,0,0,0" Text="系統提醒" Foreground="White" />
+            </Grid>
+            <Grid Grid.RowSpan="3" Grid.Row="1" Margin="5,0,5,5" Background="#F0FFFFFF"></Grid>   
+            <TextBlock Text="{Binding Message}" Foreground="#666666" Grid.RowSpan="2" Grid.Row="1" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="30,0,20,30" />
+            <Expander Header="詳細資訊" Foreground="#666666" Grid.Row="2" Margin="5,0" Visibility="{Binding ShowDetails}">
+                  <TextBox Margin="10,4" Foreground="#666666" Text="{Binding InnerMessageDetails}" TextWrapping="Wrap"  VerticalAlignment="Top" TextAlignment="Left" FontSize="14" IsReadOnly="True" />
+            </Expander>
+            <Grid Grid.Row="3" VerticalAlignment="Bottom" >
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,5">
+                        <Button Content="是"  Visibility="{Binding YesNoVisibility}" Command="{Binding YesCommand}" Style="{DynamicResource BtnStyle_白}" Margin="5"  Width="110" Height="36" Cursor="Hand" />
+                        <Button Content="否"  Visibility="{Binding YesNoVisibility}" Command="{Binding NoCommand}" Style="{DynamicResource BtnStyle_白}" Margin="5" Width="110" Height="36" Cursor="Hand" />
+                        <Button Content="取消"  Visibility="{Binding CancelVisibility}" Command="{Binding CancelCommand}" Style="{DynamicResource BtnStyle_白}" Margin="5" Width="110" Height="36" Cursor="Hand" />
+                        <Button Content="確認"  Visibility="{Binding OkVisibility}" Command="{Binding OkCommand}" Style="{DynamicResource BtnStyle_白}" Margin="5" Width="110" Height="36" Cursor="Hand" />
+                        <Button Content="關閉"  Visibility="{Binding CloseVisibility}" Command="{Binding CloseCommand}" Style="{DynamicResource BtnStyle_白}" Margin="5" Width="110" Height="36"  Cursor="Hand" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    
+    </Grid>
+</Window>

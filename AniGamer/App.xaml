@@ -1,0 +1,17 @@
+﻿<Application x:Class="AniGamer.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:AniGamer"
+             StartupUri="WPF\WPF_MainForm.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Style/Button.xaml"/>
+                <ResourceDictionary Source="Style/TextBox.xaml"/>
+                <ResourceDictionary Source="Style/ComboBox.xaml"/>
+                <ResourceDictionary Source="Style/ScrollBar.xaml"/>
+                <ResourceDictionary Source="Style/BindingConvert.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
