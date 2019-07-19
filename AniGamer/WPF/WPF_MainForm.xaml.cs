@@ -245,9 +245,6 @@ namespace WPF
 
                         try
                         {
-                            VideoList.Remove(baha);
-                            DataGrid_清單.ItemsSource = null;
-                            DataGrid_清單.ItemsSource = VideoList;
 
                             if(File.Exists(Local.AniDir + "\\" + baha.Name + ".mp4"))
                             {
@@ -258,10 +255,13 @@ namespace WPF
 
                             }
 
+                            VideoList.Remove(baha);
+                            DataGrid_清單.ItemsSource = null;
+                            DataGrid_清單.ItemsSource = VideoList;
                         }
                         catch
                         {
-                            WPFMessageBox.Show("原檔案遺失。");
+                            WPFMessageBox.Show("原檔案被開啟或已遺失，無法刪除。");
                         }
 
                         break;
@@ -338,7 +338,7 @@ namespace WPF
 
                 if(File.Exists(Local.AniDir + "\\" + Baha.Name + ".mp4"))
                 {
-                   if( WPFMessageBox.Show("在下載資料夾裡己經有同樣名稱為 " + Baha.Name + " 的影片，是否要重新下載?") == WPFMessageBoxResult.No)
+                   if( WPFMessageBox.Show("在下載資料夾裡己經有同樣名稱為 " + Baha.Name + " 的影片，是否要重新下載?"　,WPFMessageBoxButton.YesNo) == WPFMessageBoxResult.No)
                         return;
                 }
                       

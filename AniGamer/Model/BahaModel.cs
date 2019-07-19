@@ -19,13 +19,18 @@ namespace Model
 
         public int No { set; get; }
 
-        Boolean _IsOk = false;
+
+        #region 狀態
+
+        Boolean _IsOk = false; //已完成下載
         public Boolean IsOk { get { return _IsOk; } set { _IsOk = value; TriggerUpdate("IsOk"); } }
 
-        public Boolean IsIng { set; get; } = false;
+        public Boolean IsIng { set; get; } = false; //正在下載
 
-        Boolean _IsStop = false;
+        Boolean _IsStop = false; // 出現錯誤被中斷
         public Boolean IsStop { get { return _IsStop; } set { _IsStop = value; TriggerUpdate("IsStop"); } }
+
+        #endregion
 
         public String SN { set; get; }
 

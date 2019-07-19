@@ -107,7 +107,7 @@
                     <StackPanel Orientation="Horizontal" Margin="0,20,10,0" Height="56" HorizontalAlignment="Right" VerticalAlignment="Top">
                         <Button x:Name="Btn_設定" Width="98" Height="41" HorizontalAlignment="Right" Margin="0,0,20,0" VerticalAlignment="Center" Style="{DynamicResource BtnStyle_綠}" Click="Button_Click">
                             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                <Image Width="20" Height="20" Source="/AniGamer;component/Image/發送訂單.png" />
+                                <Image Width="18" Height="19" Source="/AniGamer;component/Image/設定.png" />
                                 <TextBlock Margin="4,0,0,0" Text="設定"/>
                             </StackPanel>
                         </Button>
