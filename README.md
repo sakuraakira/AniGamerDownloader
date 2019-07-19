@@ -22,6 +22,12 @@
 ![example](https://i.imgur.com/8Yizy4o.png)
 
 
+## 設定
+
+可以設定要下載的影片的品質以及影片下載後要儲存的路徑
+代理伺服器的功能為海外朋友專用 需使用時填入IP及Port，不使用時清除即可
+![example](https://i.imgur.com/nhAPXU6.png)
+
 
 ## 參考文獻
 
