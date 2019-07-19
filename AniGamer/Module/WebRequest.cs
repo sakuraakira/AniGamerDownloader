@@ -14,6 +14,31 @@ namespace Module
 
         static public WebProxy Proxy { set; get; }
 
+        static public void ProxyTest(string IP, int port , string user = "" , string pass = "")
+        {
+            try
+            {
+                WebClient x = new WebClient();
+                x.Encoding = Encoding.UTF8;
+
+                WebProxy proxy = new WebProxy(IP, port);
+                if(user != "")
+                {
+                    ServicePointManager.Expect100Continue = false;
+                    proxy.UseDefaultCredentials = true;
+                    proxy.Credentials = new NetworkCredential(user, pass);
+                }
+
+                x.Proxy = proxy;
+                string publicIp = x.DownloadString("https://api.ipify.org");
+                WPFMessageBox.Show("連線成功 IP: " + publicIp);
+            }
+            catch (Exception ex)
+            {
+                WPFMessageBox.Show(ex.Message);
+            }  
+        }
+
         static HttpWebRequest NewRequset(String Url, string sn)
         {
             HttpWebRequest request = HttpWebRequest.Create(Url) as HttpWebRequest;
@@ -25,7 +50,7 @@ namespace Module
             request.Headers.Add("origin", @"https://ani.gamer.com.tw");
             request.CookieContainer = Cookies;
 
-            if(Proxy != null)
+            if( Local.ProxyIP != "")
             {
                 request.Proxy = Proxy;
             }
@@ -67,12 +92,12 @@ namespace Module
                     return m[0].Value.Replace("<title>", "").Replace("</title>", "").Split('-')[0].Trim().Replace(" ", ",");
                 }
                 else
-                    return sn;
+                    return "";
             }
             catch (Exception EX)
             {
                 WPFMessageBox.Show("網路連線出現異常", EX.Message);
-                return sn;
+                return "";
             }
         }
 

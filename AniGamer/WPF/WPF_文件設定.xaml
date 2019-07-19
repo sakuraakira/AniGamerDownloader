@@ -10,7 +10,7 @@
             <Setter Property="Foreground" Value="#4D4D4D"/>
         </Style>
     </Window.Resources>
-    <Grid Width="637" Height="362" Margin="10" >
+    <Grid x:Name="Grid_Main" Width="637" Height="342" Margin="10" >
         <Border x:Name="Border_背景" CornerRadius="5" BorderBrush="#b2b2b2"  BorderThickness="1" >
             <Border.Background>
                 <LinearGradientBrush EndPoint="1,0" StartPoint="0,1">
@@ -28,7 +28,7 @@
                 <Image Height="19" Width="19" Source="/AniGamer;component/Image/關閉.png" />
             </Button>
         </Grid>
-        <Grid x:Name="Grid_Main" Margin="5,35,5,5" Background="White">
+        <Grid Margin="5,35,5,5" Background="White">
             <StackPanel HorizontalAlignment="Left" Margin="15,0,0,0" >
                 <StackPanel Orientation="Horizontal" Height="38" Margin="0,28,0,0">
                     <Label Width="100" HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Padding="0,0,15,0" Content="影片品質" />
@@ -43,17 +43,63 @@
                     <TextBox x:Name="TB_Email" FontSize="16" HorizontalAlignment="Left" Width="399" Margin="0,0,0,0" Height="32" Style="{DynamicResource TextBox_Default}"/>
                     <Button Margin="10,0,0,0" Height="32" Width="68" VerticalAlignment="Center" Content="瀏覽" Style="{StaticResource BtnStyle_白}" Click="Button_Click_1"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Height="38" Margin="0,30,0,0">
-                    <Label HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Margin="10,0,0,0" Content="代理伺服器" />
-                    <ListBox x:Name="LB_啟用代理"/>
-                    <TextBlock VerticalAlignment="Center" Text="(必需使用台灣IP的伺服器)"></TextBlock>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Height="38" Margin="0,10,0,0">
-                    <Label Width="100" HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Padding="0,0,15,0" Content="Proxy" />
-                    <TextBox x:Name="TB_ProxyIP" FontSize="16" HorizontalAlignment="Left" Width="289" Margin="0,0,0,0" Height="32" Style="{DynamicResource TextBox_Default}"/>
-                    <Label  HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Margin="10,0,0,0" Content="Port" />
-                    <TextBox x:Name="TB_ProxyPort" FontSize="16" HorizontalAlignment="Left" Width="89" Margin="0,0,0,0" Height="32" Style="{DynamicResource TextBox_Default}"/>
-                </StackPanel>
+
+                <Expander Margin="0,10,0,0" Foreground="#4D4D4D" Header="代理伺服器(Proxy)" Expanded="Expander_Expanded" Collapsed="Expander_Collapsed" >
+                    <StackPanel>
+                        <TextBlock Margin="24,0,0,0" VerticalAlignment="Center" Text="請使用台灣地區的IP"/>
+                        <StackPanel Orientation="Horizontal" Height="38" Margin="0,10,0,0">
+                            <Label Width="100" HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Padding="0,0,15,0" Content="Proxy" />
+                            <TextBox x:Name="TB_ProxyIP" FontSize="16" HorizontalAlignment="Left" Width="289" Margin="0,0,0,0" Height="32">
+                                <TextBox.Template>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <Border x:Name="border" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="#999999" SnapsToDevicePixels="True" CornerRadius="4">
+                                            <Grid>
+                                                <TextBlock x:Name="TB_提示" Foreground="#C0C0C0" VerticalAlignment="Center" Margin="10,0,0,0" Text="請輸入IP Ex:0.0.0.0" Visibility="Collapsed"/>
+                                                <ScrollViewer VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{TemplateBinding Foreground}" x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="Text" Value="">
+                                                <Setter TargetName="TB_提示" Property="Visibility" Value="Visible"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </TextBox.Template>
+                            </TextBox>
+                            <Label  HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Margin="10,0,0,0" Content="Port" />
+                            <TextBox x:Name="TB_ProxyPort" FontSize="16" HorizontalAlignment="Left" Width="89" Margin="0,0,0,0" Height="32" Style="{DynamicResource TextBox_Default}"/>
+                        </StackPanel>
+                        <Grid>
+                        <Border BorderBrush="#666666" BorderThickness="1" Margin="100,10,0,0" CornerRadius="3" HorizontalAlignment="Left" Height="96" Width="300">
+                            <Grid Margin="5">
+                                <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top" Margin="42,10,0,0" Text="User"/>
+                                    <TextBox x:Name="TB_ProxyUser" FontSize="16" HorizontalAlignment="Left" VerticalAlignment="Top" Width="189" Margin="90,5,0,0" Height="32" >
+                                        <TextBox.Template>
+                                            <ControlTemplate TargetType="TextBox">
+                                                <Border x:Name="border" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="#999999" SnapsToDevicePixels="True" CornerRadius="4">
+                                                    <Grid>
+                                                        <TextBlock x:Name="TB_提示" Foreground="#C0C0C0" VerticalAlignment="Center" Margin="10,0,0,0" Text="無需驗証請留空" Visibility="Collapsed"/>
+                                                        <ScrollViewer VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{TemplateBinding Foreground}" x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                                                    </Grid>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="Text" Value="">
+                                                        <Setter TargetName="TB_提示" Property="Visibility" Value="Visible"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </TextBox.Template>
+                                    </TextBox>
+                                    <TextBlock HorizontalAlignment="Left" Margin="0,50,0,0" VerticalAlignment="Top" Text="Password"/>
+                                <PasswordBox x:Name="TB_ProxyPass" FontSize="16" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="189" Margin="90,47,0,0" Height="28" />
+                            </Grid>
+                        </Border>
+                            <Button x:Name="Btn_測試" FontSize="14" Style="{StaticResource BtnStyle_灰}" Content="連線測試" Height="32" Width="92" Margin="442,64,0,0" Click="Button_Click"/>
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+
+                
             </StackPanel>
             <Button x:Name="Btn_新增" Margin="0,0,0,23" HorizontalAlignment="Center" Width="125" VerticalAlignment="Bottom" FontSize="18" Content="確認" Style="{DynamicResource BtnStyle_綠}" Click="Button_Click"/>
         </Grid>

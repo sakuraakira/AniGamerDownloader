@@ -30,11 +30,21 @@ namespace Module
 
         public static String SetupFile = AppDomain.CurrentDomain.BaseDirectory + "Setup.xml";
 
+        public static String ListFile = AppDomain.CurrentDomain.BaseDirectory + "DownloadList.xml";
+
+        public static String ProxyIP = "";
+
+        public static Int32 ProxyPort = 0;
+
+        public static String ProxyUser = "";
+
+        public static String ProxyPass = "";
+
         #endregion
 
 
         #region 視窗
-       
+
         public static WPF.WPF_MainForm MainForm;
 
         #endregion
