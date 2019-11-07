@@ -7,9 +7,14 @@ using System.Threading.Tasks;
 
 namespace Model
 {
-    class BahaModel : INotifyPropertyChanged
+    enum WebFrom
     {
-        public BahaModel()
+        Baha = 0 , Anime = 1  
+    }
+
+    class AnimeModel : INotifyPropertyChanged
+    {
+        public AnimeModel()
         {
             StartTime = DateTime.Now ;
             Quality = "720";
@@ -19,7 +24,7 @@ namespace Model
 
         public int No { set; get; }
 
-
+        public WebFrom From { set; get; }
         #region 狀態
 
         Boolean _IsOk = false; //已完成下載

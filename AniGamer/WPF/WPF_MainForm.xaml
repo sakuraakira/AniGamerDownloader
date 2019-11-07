@@ -41,8 +41,10 @@
                         <GradientStop Color="#FF117E96" Offset="1"/>
                     </LinearGradientBrush>
                 </Grid.Background>
-                <Image VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,0,5" Height="38" Source="/AniGamer;component/Image/crazy_logo.png"/>
-                <TextBlock Margin="130,0,0,5" Foreground="#Fcfcfc" VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Text="下 載 器" />
+                <Image VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,5,0,5" Height="38" Source="/AniGamer;component/Image/crazy_logo.png"/>
+                <TextBlock Margin="105,0,0,5" Foreground="#Fcfcfc" VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Text="＆" />
+                <Image VerticalAlignment="Center" HorizontalAlignment="Left" Margin="130,3,0,5" Height="38" Source="/AniGamer;component/Image/Anime1.png"/>
+                <TextBlock Margin="180,10,0,5" Foreground="#Fcfcfc" VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Text="下 載 器" />
                 <StackPanel VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,5">
                     <Button x:Name="Btn_縮小" Style="{StaticResource Button_底圖}" Background="#60FFFFFF" Width="30" Height="30" Margin="0,0,10,0" Click="Button_Click" IsTabStop="False"  Cursor="Hand" >
                         <Image Width="20" Height="20" Source="/AniGamer;component/Image/縮小.png"   />
@@ -72,8 +74,21 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
+                <TextBlock Margin="160,0,0,0" Foreground="#Fcfcfc" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Text="＆" />
+                <TextBlock Margin="181,0,0,0" FontSize="15" Cursor="Hand" VerticalAlignment="Center"  HorizontalAlignment="Left" x:Name="TB_Anime1" Text="Anime1動畫線上看" TextDecorations="Underline" MouseLeftButtonUp="TB_Anime1_MouseLeftButtonUp">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="White" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="Navy" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
                 <StackPanel Margin="0,0,18,0" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_系統版本" Text="版本 Silverlight v1.1"/>
+                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_系統版本" Text="版本 Silverlight v1.2"/>
                 </StackPanel>
             </Grid>
             <Grid x:Name="Grid_拖曳框" Margin="0,45,0,33" >

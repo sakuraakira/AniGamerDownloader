@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Module
 {
-    static class WebRequest
+    static class BahaRequest
     {
         static public CookieContainer Cookies { set; get; }
 

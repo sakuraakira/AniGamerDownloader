@@ -60,7 +60,7 @@ namespace WPF
                             WPFMessageBox.Show("ProxyIP或Port輸入錯誤");
                             return;
                         }
-                        Module.WebRequest.ProxyTest(Local.ProxyIP, Local.ProxyPort, Local.ProxyUser, Local.ProxyPass);
+                        Module.BahaRequest.ProxyTest(Local.ProxyIP, Local.ProxyPort, Local.ProxyUser, Local.ProxyPass);
                         break;
                     }
 
