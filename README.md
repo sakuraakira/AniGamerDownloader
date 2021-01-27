@@ -6,6 +6,7 @@
 2. 動畫線上看(Anime1.me)
 3. 裏番線上看(hanime1.me)
 4. myself動漫(myself-bbs.com)  
+  
 ![example](https://i.imgur.com/5eIA5ru.png)
 
   
@@ -25,7 +26,7 @@
 **`https://anime1.me/xxxxx`**
 **`https://hanime1.me/watch?v=xxxxx`**
 **`https://myself-bbs.com/thread-xxxxx-1-1.html`**
-
+  
 ![example](https://i.imgur.com/8Yizy4o.png)
   
   
@@ -37,7 +38,11 @@
 
 ![example](https://i.imgur.com/nhAPXU6.png)
   
-  
+
+## 取得Cookies
+巴哈姆特動畫瘋18禁及1080p的動畫，限制登入會員的驗証才可下載。  
+支援自動取得Google Chrome的Cookies，只要曾在Google Chrome瀏覽器登入過有曾過年齡驗証帳號，就可下載上述動畫。  
+
 ## 參考文獻
 
 
