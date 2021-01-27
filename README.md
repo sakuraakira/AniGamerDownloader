@@ -19,10 +19,10 @@
 
 將影片的連結輸入到搜尋框 便可進行下載  
 支援Url格式為
-https://ani.gamer.com.tw/animeVideo.php?sn=xxxxx
-https://anime1.me/xxxxx
-https://hanime1.me/watch?v=xxxxx
-https://myself-bbs.com/thread-xxxxx-1-1.html
+# https://ani.gamer.com.tw/animeVideo.php?sn=xxxxx
+# https://anime1.me/xxxxx
+# https://hanime1.me/watch?v=xxxxx
+# https://myself-bbs.com/thread-xxxxx-1-1.html
 
 ![example](https://i.imgur.com/8Yizy4o.png)
   
