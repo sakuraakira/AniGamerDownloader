@@ -1,7 +1,12 @@
 # 簡介
 
-適用於巴哈姆特動畫瘋(ani.gamer.com.tw),動畫線上看(Anime1.me),裏番線上看(hanime1.me),myself動漫(myself-bbs.com)
-的簡易使用的下載工具
+適用於各追番平台 簡易使用的動畫下載工具  
+目前支援
+##### 巴哈姆特動畫瘋(ani.gamer.com.tw)
+##### 動畫線上看(Anime1.me)
+##### 裏番線上看(hanime1.me)
+##### myself動漫(myself-bbs.com)
+
 [AniGamerDownloader](https://github.com/sakuraakira/AniGamerDownloader/releases)
 
 ![example](https://i.imgur.com/5eIA5ru.png)
@@ -19,10 +24,10 @@
 
 將影片的連結輸入到搜尋框 便可進行下載  
 支援Url格式為
-# https://ani.gamer.com.tw/animeVideo.php?sn=xxxxx
-# https://anime1.me/xxxxx
-# https://hanime1.me/watch?v=xxxxx
-# https://myself-bbs.com/thread-xxxxx-1-1.html
+##### https://ani.gamer.com.tw/animeVideo.php?sn=xxxxx
+##### https://anime1.me/xxxxx
+##### https://hanime1.me/watch?v=xxxxx
+##### https://myself-bbs.com/thread-xxxxx-1-1.html
 
 ![example](https://i.imgur.com/8Yizy4o.png)
   
