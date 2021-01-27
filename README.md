@@ -1,11 +1,12 @@
 # 簡介
 
 適用於各追番平台 簡易使用的動畫下載工具 [AniGamerDownloader](https://github.com/sakuraakira/AniGamerDownloader/releases)  
-目前支援  
+目前支援
 1. 巴哈姆特動畫瘋(ani.gamer.com.tw)
 2. 動畫線上看(Anime1.me)
 3. 裏番線上看(hanime1.me)
 4. myself動漫(myself-bbs.com)  
+  
   
 ![example](https://i.imgur.com/5eIA5ru.png)
 
