@@ -9,7 +9,7 @@
 
 ## 安裝方法
 
-需要下載 [FFmpeg解碼器](https://ffmpeg.zeranoe.com/builds/) 放置到主程式同一資料夾裡
+需要下載 [FFmpeg解碼器](https://ffmpeg.org/download.html) 放置到主程式同一資料夾裡
 
 ![example](https://i.imgur.com/yawZWly.png)
 
