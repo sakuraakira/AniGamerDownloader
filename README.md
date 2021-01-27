@@ -41,7 +41,7 @@
 
 ## 取得Cookies
 巴哈姆特動畫瘋18禁及1080p的動畫，限制登入會員的驗証才可下載。  
-支援自動取得Google Chrome的Cookies，只要曾在Google Chrome瀏覽器登入過有曾過年齡驗証帳號，就可下載上述動畫。  
+支援自動取得Google Chrome的Cookies，只要曾在Google Chrome瀏覽器登入過完成年齡驗証的帳號，就可下載上述動畫。  
 
 ## 參考文獻
 
