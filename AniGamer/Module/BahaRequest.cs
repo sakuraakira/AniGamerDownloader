@@ -22,7 +22,8 @@ namespace Module
         {
             try
             {
-                Cookies = new CookieContainer();
+                Cookies = new CookieContainer(40);
+              
                 string UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         
@@ -63,7 +64,9 @@ namespace Module
                         {
                             string Key = Dr.Field<string>("name");
                             string val = AesGcm256.ChromeCookies(Dr.Field<byte[]>("encrypted_value"), AesKey);
-                            Cookies.SetCookies(new Uri("https://ani.gamer.com.tw"), Key + "=" + val);
+                            Cookie cookie = new Cookie(Key, val, Dr.Field<string>("path"), Dr.Field<string>("host_key"));
+                            //Cookies.SetCookies(new Uri("https://ani.gamer.com.tw"), Key + "=" + val);
+                            Cookies.Add(cookie);
                         }
 
                     }
