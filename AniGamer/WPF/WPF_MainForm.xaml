@@ -31,6 +31,13 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="Button_Span" TargetType="Button">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#FF00A9FF"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="FontSize" Value="13.33"/>
+        </Style>
     </Window.Resources>
     <Grid >
         <Grid x:Name="Grid_主框" >
@@ -88,7 +95,7 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <StackPanel Margin="0,0,18,0" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_系統版本" Text="版本 Silverlight v1.2"/>
+                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_系統版本" Text="版本 Silverlight v1.3"/>
                 </StackPanel>
             </Grid>
             <Grid x:Name="Grid_拖曳框" Margin="0,45,0,33" >
@@ -133,8 +140,12 @@
                             </StackPanel>
                         </Button>
                     </StackPanel>
-                    <Grid x:Name="Grid_List" Margin="32,90,0,0">
-                        <DataGrid x:Name="DataGrid_清單" FontSize="16.667" BorderThickness="0" CanUserAddRows="False" CanUserReorderColumns="False" HeadersVisibility="Column" CanUserResizeColumns="False"  SelectionMode="Single" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" Focusable="False" CanUserResizeRows="False" GridLinesVisibility="None" Background="{x:Null}" IsTabStop="False" IsReadOnly="True" HorizontalAlignment="Left" Margin="0,0,0,0" Width="912">
+                    <TextBlock x:Name="TB_Title" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="32,80,0,0" Text=""/>
+                    <StackPanel x:Name="Grid_List" Orientation="Horizontal" Margin="32,110,0,0">
+                        <ListBox x:Name="ListBox_話" BorderThickness="0" SelectionMode="Single" Visibility="Collapsed">
+                            
+                        </ListBox>
+                        <DataGrid x:Name="DataGrid_清單" FontSize="15" BorderThickness="0" CanUserAddRows="False" CanUserReorderColumns="False" HeadersVisibility="Column" CanUserResizeColumns="False"  SelectionMode="Single" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" Focusable="False" CanUserResizeRows="False" GridLinesVisibility="None" Background="{x:Null}" IsTabStop="False" IsReadOnly="True" HorizontalAlignment="Left" Margin="0,0,0,0" Width="912">
                             <DataGrid.Resources>
                                 <Style TargetType="ScrollBar">
                                     <Setter Property="Template" Value="{StaticResource AppleStyleVerticalScrollBar}"/>
@@ -147,7 +158,7 @@
                             </DataGrid.RowStyle>
                             <DataGrid.CellStyle>
                                 <Style TargetType="DataGridCell">
-                                    <Setter Property="MinHeight" Value="39"/>
+                                    <Setter Property="MinHeight" Value="36"/>
                                     <Setter Property="Background" Value="White"/>
                                     <Setter Property="BorderBrush" Value="Transparent" />
                                     <Setter Property="BorderThickness" Value="1"/>
@@ -165,10 +176,10 @@
                                 </Style>
                             </DataGrid.ColumnHeaderStyle>
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn HeaderStyle="{StaticResource DataGrid_標題}" Width="41">
+                                <DataGridTemplateColumn HeaderStyle="{StaticResource DataGrid_標題}" Width="38">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <ItemContainerTemplate >
-                                            <Grid Width="39"  Height="39">
+                                            <Grid Width="36"  Height="36">
                                                 <TextBlock Text="{Binding No}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                             </Grid>
                                         </ItemContainerTemplate>
@@ -177,7 +188,7 @@
                                 <DataGridTemplateColumn HeaderStyle="{StaticResource DataGrid_標題}" Header="SN" Width="121">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <ItemContainerTemplate >
-                                            <Grid Width="119" Height="39" >
+                                            <Grid Width="119" Height="36" >
                                                 <TextBlock Text="{Binding SN}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                             </Grid>
                                         </ItemContainerTemplate>
@@ -186,7 +197,7 @@
                                 <DataGridTemplateColumn HeaderStyle="{StaticResource DataGrid_標題}"  Header="影片標題" Width="304">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <ItemContainerTemplate >
-                                            <Grid Width="302" MinHeight="39" >
+                                            <Grid Width="302" MinHeight="36" >
                                                 <TextBlock Text="{Binding Name}" Margin="10,5"  VerticalAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Left"/>
                                             </Grid>
                                         </ItemContainerTemplate>
@@ -234,7 +245,7 @@
                             </DataGrid.Columns>
 
                         </DataGrid>
-                    </Grid>
+                    </StackPanel>
                 </Grid>
             </Grid>
         </Grid>

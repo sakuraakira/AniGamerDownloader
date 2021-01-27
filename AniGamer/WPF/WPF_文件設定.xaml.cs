@@ -80,7 +80,7 @@ namespace WPF
                             Int32.TryParse(TB_ProxyPort.Text, out Local.ProxyPort);
                             Local.ProxyUser = TB_ProxyUser.Text;
                             Local.ProxyPass = TB_ProxyPass.Password;
-
+                            Local.CookiesSTR = TB_Cookies.Text;
                             if (CB_品質.SelectedItem != null)
                                 Local.Quality = (String)CB_品質.SelectedItem;
                             else
@@ -105,6 +105,7 @@ namespace WPF
                             XElement xDir = new XElement("Dir");
                             xDir.Add(new XElement("Ani", Local.AniDir));
                             xDir.Add(new XElement("Q", Local.Quality));
+                            xDir.Add(new XElement("Cookies", Local.CookiesSTR));
                             xRoot.Add(xDir);
 
                             if (xRoot.Element("Proxy") != null)
@@ -125,6 +126,7 @@ namespace WPF
                                 xUser.Add(new XElement("Pass", Local.ProxyPass));
                                 xRoot.Add(xUser);
                             }
+
 
                             xDoc.Save(Local.SetupFile);
                         }
@@ -155,12 +157,17 @@ namespace WPF
 
         private void Expander_Expanded(object sender, RoutedEventArgs e)
         {
-            Grid_Main.Height = 462;
+            Grid_Main.Height = 502;
         }
 
         private void Expander_Collapsed(object sender, RoutedEventArgs e)
         {
-            Grid_Main.Height = 342;
+            Grid_Main.Height = 382;
+        }
+
+        private void Btn_清除_Click(object sender, RoutedEventArgs e)
+        {
+            TB_Cookies.Text = "";
         }
     }
 }

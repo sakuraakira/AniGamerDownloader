@@ -9,7 +9,7 @@ using System.Collections.Specialized;
 
 namespace Module
 {
-    static class Anime1Request
+    static class HAnimeRequest
     {
         static public CookieContainer Cookies { set; get; }
 
@@ -47,8 +47,8 @@ namespace Module
             request.ContentType = "application/x-www-form-urlencoded";
             request.Timeout = 30000;
             request.UserAgent = @"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
-            request.Referer = @"https://anime1.me/" + sn;
-            request.Headers.Add("origin", @"https://anime1.me");
+            request.Referer = @"https://hanime1.me/watch?v=" + sn;
+            request.Headers.Add("origin", @"https://hanime1.me");
             request.CookieContainer = Cookies;
             request.UseDefaultCredentials = true;
             if ( Local.ProxyIP != "")
@@ -80,46 +80,38 @@ namespace Module
             try
             {
                 Cookies = new CookieContainer();
-                HttpWebRequest request = HttpWebRequest.Create(@"https://anime1.me/" + sn + "#acpwd-" +sn) as HttpWebRequest;
-                request.Method = "POST";
+                HttpWebRequest request = HttpWebRequest.Create(@"https://hanime1.me/watch?v=" + sn) as HttpWebRequest;
+                request.Method = "GET";
                 request.ContentType = "application/x-www-form-urlencoded";
                 request.Timeout = 30000;
                 request.UserAgent = @"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
-                request.Referer = @"https://anime1.me/" + sn;
-                request.Headers.Add("origin", @"https://anime1.me");
+                request.Referer = @"https://hanime1.me/watch?v=" + sn;
+                request.Headers.Add("origin", @"https://hanime1.me");
                 request.CookieContainer = Cookies;
-                //必須透過ParseQueryString()來建立NameValueCollection物件，之後.ToString()才能轉換成queryString
-                NameValueCollection postParams = System.Web.HttpUtility.ParseQueryString(string.Empty);
-                postParams.Add("acpwd-pass", "anime1.me");
 
                 if (Local.ProxyIP != "")
                 {
                     request.Proxy = Proxy;
                 }
 
-                byte[] byteArray = Encoding.UTF8.GetBytes(postParams.ToString());
-                using (Stream reqStream = request.GetRequestStream())
-                {
-                    reqStream.Write(byteArray, 0, byteArray.Length);
-                }
 
                 string result = "";
                 using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
                 {
                     using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                     {
-                        Cookies = request.CookieContainer;
+                        //Cookies = request.CookieContainer;
                         result = sr.ReadToEnd();
                         if (result != "" && result != null)
                         {
 
-                            Regex rx = new Regex("<title>(.*)</title>");
+                            Regex rx = new Regex("property=\"og:title\" content=\"(.*)\"");
                             MatchCollection m = rx.Matches(result);
 
                             if (m.Count > 0)
                             {
-                                string name = m[0].Value.Replace("<title>", "").Replace("</title>", "");
-                                return name.Remove(name.IndexOf("&#8211;")).Replace(" ", "").Replace("/", "_").Replace(":", "："); 
+                                string name = m[0].Value.Replace("property=\"og:title\" content=\"", "").Replace("\"", "").Replace(":", "：");
+                                return name;
                             }
                             else
                                 return "";
@@ -179,7 +171,7 @@ namespace Module
 
         static public String GetM3U8(String sn)
         {
-            HttpWebRequest request = NewRequset(@"https://anime1.me/" + sn, sn);
+            HttpWebRequest request = NewRequset(@"https://hanime1.me/watch?v=" + sn, sn);
 
             string result = "";
             using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
@@ -191,20 +183,11 @@ namespace Module
                     if (result != "" && result != null)
                     {
 
-                        Regex rx = new Regex("https://i.animeone.me/(.*)?autoplay=1");
+                        Regex rx = new Regex("url: 'https://(.*)',");
                         MatchCollection m = rx.Matches(result);
-
                         if (m.Count > 0)
                         {
-                            string name = m[0].Value.Replace("?autoplay=1", "");
-                            return name + ".m3u8";
-                        }
-
-                        rx = new Regex("class=\"vframe\" src=\"(.*)\" width");
-                        m = rx.Matches(result);
-                        if (m.Count > 0)
-                        {
-                            string name = m[0].Value.Replace("class=\"vframe\" src=\"", "").Replace("\" width", "");
+                            string name = m[0].Value.Replace("url: '", "").Replace("',", "");
                             return name;
                         }
 

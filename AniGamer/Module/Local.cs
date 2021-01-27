@@ -40,6 +40,8 @@ namespace Module
 
         public static String ProxyPass = "";
 
+        public static String CookiesSTR = "";
+
         #endregion
 
 

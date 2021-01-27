@@ -1,0 +1,16 @@
+﻿<Window x:Class="WPF.Win_Web"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:my="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
+        xmlns:wb="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+        mc:Ignorable="d"
+        Title="Win_Web" Height="450" Width="800">
+    <Grid>
+        <my:WindowsFormsHost>
+            <wb:WebBrowser x:Name="WB_Main"></wb:WebBrowser>
+        </my:WindowsFormsHost>
+        <Button Style="{StaticResource BtnStyle_綠}" Content="取 得" Click="Button_Click"/>
+    </Grid>
+</Window>

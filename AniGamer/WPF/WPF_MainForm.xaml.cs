@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
+using System.Data.SQLite;
 using System.Windows.Threading;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
@@ -16,7 +16,8 @@ using System.Threading;
 using System.IO;
 using System.Windows.Media;
 using System.Net;
-using System.Diagnostics;
+
+
 
 namespace WPF
 {
@@ -26,13 +27,14 @@ namespace WPF
     public partial class WPF_MainForm : Window
     {
         List<Model.AnimeModel> VideoList { set; get; }
+       
         Thread TH;
 
         public WPF_MainForm()
         {
             InitializeComponent();
             Local.MainForm = this;
-
+          
             if (File.Exists(Local.SetupFile))
             {
                 try
@@ -53,17 +55,17 @@ namespace WPF
                             Local.AniDir = xDir.Element("Ani").Value;
                     }
                     if (xDir.Element("Q") != null) Local.Quality =  xDir.Element("Q").Value;
-
+                    if (xDir.Element("Cookies") != null) Local.CookiesSTR = xDir.Element("Cookies").Value;
 
                     XElement xProxy = xRoot.Element("Proxy");
-                    if (xProxy != null)
+                    if (xProxy != null && xProxy.HasElements)
                     {
                         Local.ProxyIP = xProxy.Element("IP").Value;
                         Int32.TryParse(xProxy.Element("Port").Value, out Local.ProxyPort);
                     }
 
                     XElement xUser = new XElement("ProxyUser");
-                    if (xUser != null)
+                    if (xUser != null && xUser.HasElements)
                     {
                         Local.ProxyUser = xUser.Element("User").Value;
                         Local.ProxyPass = xUser.Element("Pass").Value;
@@ -174,6 +176,8 @@ namespace WPF
                 case "Btn_消字":
                     {
                         TB_搜尋.Text = "";
+                        TB_Title.Text = "";
+                        ListBox_話.Visibility = Visibility.Collapsed;
                         break;
                     }
                 case "Btn_搜尋":
@@ -184,10 +188,13 @@ namespace WPF
 
                 case "Btn_設定":
                     {
-                        Border_遮幕.Visibility = Visibility.Visible;
-                        WPF_文件設定 WPF = new WPF_文件設定();
-                        WPF.ShowDialog();
-                        Border_遮幕.Visibility = Visibility.Collapsed;
+                        //Border_遮幕.Visibility = Visibility.Visible;
+                        //WPF_文件設定 WPF = new WPF_文件設定();
+                        //WPF.ShowDialog();
+                        //Border_遮幕.Visibility = Visibility.Collapsed;
+
+                        Win_Web win = new Win_Web();
+                        win.Show();
                         break;
                     }
 
@@ -196,6 +203,21 @@ namespace WPF
                         System.Diagnostics.Process prc = new System.Diagnostics.Process();
                         prc.StartInfo.FileName = Local.AniDir;
                         prc.Start();
+
+                        //string path = @"C:\Users\sakur\AppData\Local\Google\Chrome\User Data\Default\Cookies";
+                        //SQLiteConnection connection = new System.Data.SQLite.SQLiteConnection("Data Source = " + path);
+                        //connection.Open();
+                        //string commandText = @"select * from cookies where host_key like '%gamer.com.tw%'";
+                       //System.Data.SQLite.SQLiteCommand command = new System.Data.SQLite.SQLiteCommand(commandText, connection);
+                       ///command.ExecuteNonQuery();
+                       ////DataTable myDataTable = new DataTable();
+                        //
+                        //SQLiteDataAdapter da = new SQLiteDataAdapter(commandText, connection);
+                        //DataSet ds = new DataSet();
+                        //ds.Clear();
+                        //da.Fill(ds);
+                        //DataTable dataTable = ds.Tables[0];
+
                         break;
                     }
 
@@ -287,6 +309,9 @@ namespace WPF
             if (TB_搜尋.Text.Length == 5 || TB_搜尋.Text.Length > 20)
             {
                 int Sn;
+                TB_Title.Text = "";
+                ListBox_話.Visibility = Visibility.Collapsed;
+
                 if (!int.TryParse(TB_搜尋.Text, out Sn))
                 {
                     if (TB_搜尋.Text.Contains("sn="))
@@ -298,7 +323,18 @@ namespace WPF
                             return;
                         }
                     }
-                    else if(TB_搜尋.Text.Contains("anime1.me"))
+                    else if (TB_搜尋.Text.Contains("hanime1.me"))
+                    {
+                        var s = TB_搜尋.Text.Substring(TB_搜尋.Text.IndexOf("me/watch?v=") + 11);
+                        if (!int.TryParse(s, out Sn))
+                        {
+                            WPFMessageBox.Show("不是正確的連結格式。");
+                            return;
+                        }
+
+
+                    }
+                    else if (TB_搜尋.Text.Contains("anime1.me"))
                     {
                         var s = TB_搜尋.Text.Substring(TB_搜尋.Text.IndexOf("me/") + 3);
                         if (!int.TryParse(s, out Sn))
@@ -306,6 +342,36 @@ namespace WPF
                             WPFMessageBox.Show("不是正確的連結格式。");
                             return;
                         }
+                    }
+                    else if (TB_搜尋.Text.Contains("myself-bbs.com"))
+                    {
+                        ListBox_話.Visibility = Visibility.Visible;
+                        string s = TB_搜尋.Text.Substring(TB_搜尋.Text.IndexOf("thread-") + 7);
+                        s = s.Remove(s.IndexOf("-"));
+                        if (!int.TryParse(s, out Sn))
+                        {
+                            WPFMessageBox.Show("不是正確的連結格式。");
+                            return;
+                        }
+
+
+                        List<String> Lists = MyselfRequest.GetTitle(s);
+                        TB_Title.Text = Lists[0];
+                        if (Lists.Count > 1)
+                        {
+                            ListBox_話.Items.Clear();
+                            for (int i = 1; i < Lists.Count; i++)
+                            {
+                                Button button = new Button();
+                                button.Tag = Lists[i];
+                                button.Content = "第" + i.ToString() + "話";
+                                button.Style = this.FindResource("Button_Span") as Style;
+                                button.Click += Button_Click1;
+                                ListBox_話.Items.Add(button);
+                            }
+                        }
+                        TB_搜尋.Text = "";
+                        return;
                     }
                     else
                     {
@@ -334,6 +400,12 @@ namespace WPF
                 {
                     Ani.Name = BahaRequest.GetTitle(Ani.SN).Split('-')[0];
                     Ani.From = Model.WebFrom.Baha;
+                }
+                else if (TB_搜尋.Text.Contains("hanime1.me"))
+                {
+                    Ani.Name = HAnimeRequest.GetTitle(Ani.SN);
+                    Ani.From = Model.WebFrom.HAnime;
+                    
                 }
                 else
                 {
@@ -382,6 +454,31 @@ namespace WPF
             }
         }
 
+        private void Button_Click1(object sender, RoutedEventArgs e)
+        {
+            string T = ((Button)sender).Tag.ToString();
+
+            Model.AnimeModel Ani = new Model.AnimeModel();
+            Ani.SN = T.Split(':')[0];
+            Ani.Span = T.Split(':')[1];
+            Ani.Name = TB_Title.Text + '-' + T.Split(':')[1];
+            Ani.From = Model.WebFrom.Myself;
+            Ani.Status = "排隊中...";
+
+            if (VideoList.Count > 0)
+                Ani.No = VideoList.Max(I => I.No) + 1;
+            else
+                Ani.No = 1;
+            Ani.Quality = Local.Quality;
+
+            VideoList.Add(Ani);
+            DataGrid_清單.ItemsSource = null;
+            DataGrid_清單.ItemsSource = VideoList;
+
+
+            處理下載();
+        }
+
         void 處理下載()
         {
             if (VideoList.Count == 0) return;
@@ -393,14 +490,24 @@ namespace WPF
             if (q.Count() > 0)
             {
                 Model.AnimeModel Ani = q.OrderBy(I => I.No).First();
-
                 if (Ani.From == Model.WebFrom.Baha)
                 {
                     TH = new Thread(new ParameterizedThreadStart(BahaDownload));
                     TH.Start(Ani);
-                }else
+                }
+                else if(Ani.From == Model.WebFrom.Anime)
                 {
                     TH = new Thread(new ParameterizedThreadStart(Anime1Download));
+                    TH.Start(Ani);
+                }
+                else if(Ani.From == Model.WebFrom.Myself)
+                {
+                    TH = new Thread(new ParameterizedThreadStart(MyselfDownload));
+                    TH.Start(Ani);
+                }
+                else if (Ani.From == Model.WebFrom.HAnime)
+                {
+                    TH = new Thread(new ParameterizedThreadStart(HAnimeDownload));
                     TH.Start(Ani);
                 }
             }
@@ -427,7 +534,20 @@ namespace WPF
 
             try
             {
+                if (!String.IsNullOrWhiteSpace(Local.CookiesSTR))
+                {
+                    System.Net.CookieContainer cc = new System.Net.CookieContainer();
+                    foreach (var str in Local.CookiesSTR.Split(';'))
+                        cc.SetCookies(new Uri("https://ani.gamer.com.tw"), str);
+
+                    BahaRequest.Cookies = cc;
+                }else
+                {
+                    BahaRequest.Cookies = new CookieContainer();
+                }
+
                 Baha.DeviceId = BahaRequest.GetDeviceId(Baha.SN);
+
                 if (Baha.DeviceId == "")
                 {
                     Baha.Status = "無法取得DeviceId";
@@ -450,7 +570,7 @@ namespace WPF
                 BahaRequest.Unlock(Baha.SN);
                 BahaRequest.Unlock(Baha.SN);
                 BahaRequest.StartAd(Baha.SN);
-                for (int i = 8; i > 0; i--)
+                for (int i = 25; i > 0; i--)
                 {
                     Baha.Status = "等待" + i.ToString() + "秒跳過廣告...";
                     if (!VideoList.Contains(Baha))
@@ -563,8 +683,9 @@ namespace WPF
                 DeleteSrcFolder(Path);
                 處理下載();
             }
-            catch
+            catch(Exception ex)
             {
+                WPFMessageBox.Show("出錯", ex.Message);
                 Baha.IsIng = false;
                 Baha.IsStop = true;
                 Baha.Status = "下載中出現錯誤...";
@@ -574,10 +695,11 @@ namespace WPF
 
         }
 
+        Model.AnimeModel Baha;
         void Anime1Download(object value)  //主下載功能 不要用主線程來執行
         {
 
-            Model.AnimeModel Baha = (Model.AnimeModel)value;
+            Baha = (Model.AnimeModel)value;
             Baha.IsIng = true;
 
             if (Local.ProxyIP != "" && Local.ProxyPort != 0) //如果有設定Proxy 
@@ -596,7 +718,7 @@ namespace WPF
             {
 
                 Baha.Status = "解析中";
-                Anime1Request.SendPass();
+                //Anime1Request.SendPass();
                 Baha.Url = Anime1Request.GetM3U8(Baha.SN);
                 if (Baha.Url.Contains("v.anime1.me"))
                 {
@@ -604,13 +726,17 @@ namespace WPF
                     String Src = Anime1Request.CallAPI(Send);
                     if (Src.Contains(".mp4"))
                     {
-                        Process proc = new Process();
-                        proc.StartInfo.FileName = "https:" + Src;
-                        proc.Start();
-                        Baha.Status = "請用瀏覽器下載";
-                        Baha.IsIng = false;
-                        Baha.IsOk = true;
-                        處理下載();
+                        //Process proc = new Process();
+                        //proc.StartInfo.FileName = "https:" + Src;
+                        //proc.Start();
+                        using (WebClient webClient_ = new WebClient())
+                        {
+                            webClient_.DownloadProgressChanged += WebClient__DownloadProgressChanged;
+                            webClient_.DownloadFileCompleted += WebClient__DownloadFileCompleted;
+                            webClient_.DownloadFileTaskAsync("https:" + Src, AppDomain.CurrentDomain.BaseDirectory + "Tmp\\tmp" + Baha.SN +".mp4");
+                            Baha.Status = "下載中";
+                            Baha.BarMax = 100;
+                        }
                         return;
                     }
                     else if (Src.Contains(".m3u8"))
@@ -720,6 +846,207 @@ namespace WPF
 
         }
 
+        void HAnimeDownload(object value)  //主下載功能 不要用主線程來執行
+        {
+
+            Baha = (Model.AnimeModel)value;
+            Baha.IsIng = true;
+
+            if (Local.ProxyIP != "" && Local.ProxyPort != 0) //如果有設定Proxy 
+            {
+                HAnimeRequest.Proxy = new System.Net.WebProxy(Local.ProxyIP, Local.ProxyPort);
+
+                if (Local.ProxyUser != "")
+                {
+                    System.Net.ServicePointManager.Expect100Continue = false;
+                    HAnimeRequest.Proxy.UseDefaultCredentials = true;
+                    HAnimeRequest.Proxy.Credentials = new System.Net.NetworkCredential(Local.ProxyUser, Local.ProxyPass);
+                }
+            }
+
+            try
+            {
+
+                Baha.Status = "解析中";
+                //Anime1Request.SendPass();
+                Baha.Url = HAnimeRequest.GetM3U8(Baha.SN);
+       
+
+                    if (Baha.Url.Contains(".mp4"))
+                    {
+                        using (WebClient webClient_ = new WebClient())
+                        {
+                            webClient_.DownloadProgressChanged += WebClient__DownloadProgressChanged;
+                            webClient_.DownloadFileCompleted += WebClient__DownloadFileCompleted;
+                            webClient_.DownloadFileTaskAsync(Baha.Url, AppDomain.CurrentDomain.BaseDirectory + "Tmp\\tmp" + Baha.SN + ".mp4");
+                            Baha.Status = "下載中";
+                            Baha.BarMax = 100;
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        WPFMessageBox.Show("未知的影片格式。");
+                    }
+                
+            }
+            catch
+            {
+                Baha.IsIng = false;
+                Baha.IsStop = true;
+                Baha.Status = "下載中出現錯誤...";
+                return;
+            }
+
+        }
+
+        private void WebClient__DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        {
+
+            Baha.Status = "轉檔中";
+            Thread.Sleep(200);
+            FileStream file = new FileStream(AppDomain.CurrentDomain.BaseDirectory + "Tmp\\tmp" + Baha.SN + ".mp4", FileMode.Open);
+            using (var filestream = new FileStream(Local.AniDir + "\\" + Baha.Name + ".mp4", FileMode.Create))
+            {
+                file.CopyTo(filestream);
+                file.Close();
+                File.Delete(AppDomain.CurrentDomain.BaseDirectory + "Tmp\\tmp" + Baha.SN + ".mp4");
+            }
+            Baha.IsIng = false;
+            Baha.IsOk = true;
+            Baha.Status = "下載完成";
+            處理下載();
+        }
+
+        private void WebClient__DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            Baha.Bar = e.ProgressPercentage;
+            Baha.Status = string.Format("已下載 {0} %", Baha.Bar);
+        }
+
+        void MyselfDownload(object value)  //主下載功能 不要用主線程來執行
+        {
+
+            Model.AnimeModel Baha = (Model.AnimeModel)value;
+            Baha.IsIng = true;
+
+            if (Local.ProxyIP != "" && Local.ProxyPort != 0) //如果有設定Proxy 
+            {
+                Anime1Request.Proxy = new System.Net.WebProxy(Local.ProxyIP, Local.ProxyPort);
+
+                if (Local.ProxyUser != "")
+                {
+                    System.Net.ServicePointManager.Expect100Continue = false;
+                    Anime1Request.Proxy.UseDefaultCredentials = true;
+                    Anime1Request.Proxy.Credentials = new System.Net.NetworkCredential(Local.ProxyUser, Local.ProxyPass);
+                }
+            }
+
+            try
+            {
+
+                Baha.Status = "解析中";
+
+                Baha.Url = MyselfRequest.GetM3U8(Baha.SN , Baha.Span);
+
+                if (Baha.Url.Contains("bbs.com/"))
+                    Baha.Res = Baha.Url.Substring(Baha.Url.IndexOf("bbs.com/") + 8).Replace('/', '_');
+
+
+                Baha.Tmp = "Tmp\\tmp" + Baha.SN;
+                String Path = AppDomain.CurrentDomain.BaseDirectory + Baha.Tmp;
+
+                if (!Directory.Exists(Path))
+                {
+                    Directory.CreateDirectory(Path);
+                }
+               
+
+                if (Baha.ChuckList == null || !File.Exists(Path + "\\" + Baha.Res)) // 如果己經有Chuck 就不用再次下載
+                {
+                    FileStream file = new FileStream(Path + "\\" + Baha.Res, FileMode.Create);
+                    Baha.ChuckList = new List<string>();
+                    string KeyUri = MyselfRequest.DownloadM3U8(Baha.Url, Baha.SN, file, Baha.ChuckList);
+                }
+
+
+                String prefix = Baha.Url.Remove(Baha.Url.LastIndexOf("/"));
+                Baha.BarMax = Baha.ChuckList.Count;
+                Baha.Bar = 0;
+
+                String[] Files = Directory.GetFiles(Path);
+                if (Files.Length > 3)  //如果有暫存檔案 , Chuck移除減少下載
+                {
+                    Baha.ChuckList.Count();
+                    foreach (String file in Files)
+                    {
+                        if (!file.EndsWith(".ts")) continue;
+                        var q = Baha.ChuckList.Where(I => I.Substring(I.LastIndexOf("/") + 1) == System.IO.Path.GetFileName(file));
+                        if (q.Count() > 0)
+                        {
+                            Baha.ChuckList.Remove(q.First());
+                            Baha.Bar++;
+                        }
+
+                    }
+
+                }
+
+                foreach (string Chuck in Baha.ChuckList)
+                {
+                    Baha.Bar++;
+                    Baha.Status = string.Format("已下載 ({0}/{1})", Baha.Bar, Baha.BarMax);
+                    FileStream ChuckFile = new FileStream(Path + "\\" + Chuck.Substring(Chuck.LastIndexOf("/") + 1), FileMode.Create);
+                    if (!MyselfRequest.Download(Chuck, Baha.SN, ChuckFile))
+                    {
+                        Baha.IsIng = false;
+                        Baha.IsStop = true;
+                        this.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            WPFMessageBox.Show("網路異常...");
+                        }));
+                        return;
+                    }
+
+                    if (!VideoList.Contains(Baha))
+                    {
+                        DeleteSrcFolder(Path);
+                        處理下載();
+                        return;
+                    }
+                }
+
+                Baha.Status = "轉檔中";
+                System.Diagnostics.Process process = new System.Diagnostics.Process();
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+                startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                startInfo.FileName = "ffmpeg.exe";
+                startInfo.Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4";
+                process.StartInfo = startInfo;
+                process.Start();
+                process.WaitForExit();
+                if (process != null)
+                {
+                    process.Close();
+                }
+
+                Baha.Status = "下載完成";
+                Baha.IsIng = false;
+                Baha.IsOk = true;
+                DeleteSrcFolder(Path);
+                處理下載();
+
+            }
+            catch
+            {
+                Baha.IsIng = false;
+                Baha.IsStop = true;
+                Baha.Status = "下載中出現錯誤...";
+                return;
+            }
+
+        }
+
         public static void DeleteSrcFolder(string file)
         {
             DirectoryInfo fileInfo = new DirectoryInfo(file);
@@ -765,6 +1092,7 @@ namespace WPF
             XElement xDir = new XElement("Dir");
             xDir.Add(new XElement("Ani", Local.AniDir));
             xDir.Add(new XElement("Q", Local.Quality));
+            xDir.Add(new XElement("Cookies", Local.CookiesSTR));
             xRoot.Add(xDir);
 
             if (Local.ProxyIP != "")

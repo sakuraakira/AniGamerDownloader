@@ -9,7 +9,7 @@ namespace Model
 {
     enum WebFrom
     {
-        Baha = 0 , Anime = 1  
+        Baha = 0 , Anime = 1  , Myself = 2 , HAnime = 3
     }
 
     class AnimeModel : INotifyPropertyChanged
@@ -38,6 +38,8 @@ namespace Model
         #endregion
 
         public String SN { set; get; }
+
+        public String Span { set; get; }
 
         public String Url { set; get; }
 

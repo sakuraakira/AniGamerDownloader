@@ -89,7 +89,7 @@ namespace Module
 
                 if (m.Count > 0)
                 {
-                    return m[0].Value.Replace("<title>", "").Replace("</title>", "").Split('-')[0].Trim().Replace(" ", ",");
+                    return m[0].Value.Replace("<title>", "").Replace("</title>", "").Split('-')[0].Trim().Replace(" ", ",").Replace("/", "_").Replace(":", "：");
                 }
                 else
                     return "";
@@ -103,7 +103,8 @@ namespace Module
 
         static public String GetDeviceId(String sn)
         {
-            Cookies = new CookieContainer();
+            
+            
             HttpWebRequest request = NewRequset(@"https://ani.gamer.com.tw/ajax/getdeviceid.php?id=", sn);
             string result = "";
             using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
@@ -195,13 +196,13 @@ namespace Module
 
         public static void StartAd(String sn)
         {
-            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=194699";
+            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=205025";
             String Rep = Request(STR, sn);
         }
 
         public static void SkipAd(String sn)
         {
-            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=194699&ad=end";
+            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=205025&ad=end";
             String Rep = Request(STR, sn);
         }
 
@@ -241,7 +242,7 @@ namespace Module
                         {
                             if (x.Key == "src")
                             {
-                                return "https:" + x.Value.ToString();
+                                return x.Value.ToString();
                             }
                         }
                     }
