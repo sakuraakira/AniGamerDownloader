@@ -20,11 +20,11 @@
 ## 使用方法
 
 將影片的連結輸入到搜尋框 便可進行下載  
-支援Url格式為
-1. https://ani.gamer.com.tw/animeVideo.php?sn=xxxxx
-1. https://anime1.me/xxxxx
-1. https://hanime1.me/watch?v=xxxxx
-1. https://myself-bbs.com/thread-xxxxx-1-1.html
+支援連結格式為
+**`https://ani.gamer.com.tw/animeVideo.php?sn=xxxxx`**
+**`https://anime1.me/xxxxx`**
+**`https://hanime1.me/watch?v=xxxxx`**
+**`https://myself-bbs.com/thread-xxxxx-1-1.html`**
 
 ![example](https://i.imgur.com/8Yizy4o.png)
   
