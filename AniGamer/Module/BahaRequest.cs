@@ -5,12 +5,67 @@ using System.IO;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using System.Data.SQLite;
+using System.Data;
+using System.Linq;
+
 
 namespace Module
 {
     static class BahaRequest
     {
+        static public byte[] AesKey;
         static public CookieContainer Cookies { set; get; }
+
+
+        static public void GetChromeCookies()
+        {
+            string UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            if (AesKey == null)
+            {
+                using (StreamReader r = new StreamReader(UserPath + @"\AppData\Local\Google\Chrome\User Data\Local State"))
+                {
+                    string json = r.ReadToEnd();
+                    dynamic array = JValue.Parse(json);
+                    dynamic crypt = array.os_crypt;
+                    string base64 = crypt.encrypted_key;
+                    var base64EncodedBytes = System.Convert.FromBase64String(base64);
+                    Byte[] Code = base64EncodedBytes.Skip(5).ToArray();
+                    AesKey = Module.DPAPI.Decrypt(Code, null, out string C);
+                }
+            }
+
+            string path = UserPath + @"\AppData\Local\Google\Chrome\User Data\Default\Cookies";
+            SQLiteConnection connection = new System.Data.SQLite.SQLiteConnection("Data Source = " + path);
+            connection.Open();
+            string commandText = @"select * from cookies where host_key like '%.gamer.com.tw%' ";
+            SQLiteCommand command = new SQLiteCommand(commandText, connection);
+            command.ExecuteNonQuery();
+            SQLiteDataAdapter da = new SQLiteDataAdapter(commandText, connection);
+            DataSet ds = new DataSet();
+            ds.Clear();
+            da.Fill(ds);
+            connection.Close();
+
+            DataTable DT = ds.Tables[0];
+            if(DT != null && DT.Rows.Count > 0 )
+            {
+                Cookies = new System.Net.CookieContainer();
+                foreach (DataRow Dr in DT.Rows)
+                {
+                    string Key = Dr.Field<string>("name");
+                    string val = AesGcm256.ChromeCookies(Dr.Field<byte[]>("encrypted_value") , AesKey);
+                    Cookies.SetCookies(new Uri("https://ani.gamer.com.tw"), Key +"="+ val);
+                }
+
+            }else
+            {
+                Cookies = new CookieContainer();
+            }
+
+
+        }
 
         static public WebProxy Proxy { set; get; }
 
@@ -18,8 +73,10 @@ namespace Module
         {
             try
             {
-                WebClient x = new WebClient();
-                x.Encoding = Encoding.UTF8;
+                WebClient x = new WebClient
+                {
+                    Encoding = Encoding.UTF8
+                };
 
                 WebProxy proxy = new WebProxy(IP, port);
                 if(user != "")
@@ -78,8 +135,10 @@ namespace Module
         {
             try
             {
-                WebClient x = new WebClient();
-                x.Encoding = Encoding.UTF8;
+                WebClient x = new WebClient
+                {
+                    Encoding = Encoding.UTF8
+                };
 
                 if (Proxy != null) x.Proxy = Proxy;
                 
@@ -106,13 +165,12 @@ namespace Module
             
             
             HttpWebRequest request = NewRequset(@"https://ani.gamer.com.tw/ajax/getdeviceid.php?id=", sn);
-            string result = "";
             using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
             {
                 using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                 {
                     Cookies = request.CookieContainer;
-                    result = sr.ReadToEnd();
+                    string result = sr.ReadToEnd();
                     if (result != "" && result != null)
                     {
                         JObject obj = JObject.Parse(result);
@@ -197,44 +255,42 @@ namespace Module
         public static void StartAd(String sn)
         {
             string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=205025";
-            String Rep = Request(STR, sn);
+            Request(STR, sn);
         }
 
         public static void SkipAd(String sn)
         {
             string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=205025&ad=end";
-            String Rep = Request(STR, sn);
+            Request(STR, sn);
         }
 
         public static void Unlock(String sn)
         {
             string STR = @"https://ani.gamer.com.tw/ajax/unlock.php?sn=" + sn + "&ttl=0";
-            String Rep = Request(STR, sn);
+             Request(STR, sn);
         }
 
         public static void CheckLock(String rid, String sn)
         {
             string STR = @"https://ani.gamer.com.tw/ajax/checklock.php?device="+ rid + "&sn=" + sn ;
-            String Rep = Request(STR, sn);
+            Request(STR, sn);
         }
 
         public static void VideoStart(String sn)
         {
             string STR = @"https://ani.gamer.com.tw/ajax/videoStart.php?sn=" + sn;
-            String Rep = Request(STR, sn);
+            Request(STR, sn);
         }
 
         static public String GetM3U8(String rid, String sn)
         {
             HttpWebRequest request = NewRequset(@"https://ani.gamer.com.tw/ajax/m3u8.php?sn=" + sn + "&device=" + rid, sn);
-
-            string result = "";
             using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
             {
                 using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                 {
                     Cookies = request.CookieContainer;
-                    result = sr.ReadToEnd();
+                    string result = sr.ReadToEnd();
                     if (result != "" && result != null)
                     {
                         JObject obj = JObject.Parse(result);

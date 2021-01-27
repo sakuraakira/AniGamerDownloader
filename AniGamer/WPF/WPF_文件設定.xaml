@@ -70,9 +70,9 @@
                             <TextBox x:Name="TB_ProxyPort" FontSize="16" HorizontalAlignment="Left" Width="89" Margin="0,0,0,0" Height="32" Style="{DynamicResource TextBox_Default}"/>
                         </StackPanel>
                         <Grid>
-                        <Border BorderBrush="#666666" BorderThickness="1" Margin="100,10,0,0" CornerRadius="3" HorizontalAlignment="Left" Height="96" Width="300">
-                            <Grid Margin="5">
-                                <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top" Margin="42,10,0,0" Text="User"/>
+                            <Border BorderBrush="#666666" BorderThickness="1" Margin="100,10,0,0" CornerRadius="3" HorizontalAlignment="Left" Height="96" Width="300">
+                                <Grid Margin="5">
+                                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top" Margin="42,10,0,0" Text="User"/>
                                     <TextBox x:Name="TB_ProxyUser" FontSize="16" HorizontalAlignment="Left" VerticalAlignment="Top" Width="189" Margin="90,5,0,0" Height="32" >
                                         <TextBox.Template>
                                             <ControlTemplate TargetType="TextBox">
@@ -91,20 +91,12 @@
                                         </TextBox.Template>
                                     </TextBox>
                                     <TextBlock HorizontalAlignment="Left" Margin="0,50,0,0" VerticalAlignment="Top" Text="Password"/>
-                                <PasswordBox x:Name="TB_ProxyPass" FontSize="16" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="189" Margin="90,47,0,0" Height="28" />
-                            </Grid>
-                        </Border>
+                                    <PasswordBox x:Name="TB_ProxyPass" FontSize="16" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="189" Margin="90,47,0,0" Height="28" />
+                                </Grid>
+                            </Border>
                             <Button x:Name="Btn_測試" FontSize="14" Style="{StaticResource BtnStyle_灰}" Content="連線測試" Height="32" Width="92" Margin="442,64,0,0" Click="Button_Click"/>
                         </Grid>
                     </StackPanel>
-                </Expander>
-
-                <Expander Margin="0,10,0,0" Foreground="#4D4D4D" Header="登入Cookies" Expanded="Expander_Expanded" Collapsed="Expander_Collapsed" >
-                    <Grid>
-                        <TextBox Margin="10,10,80,10" x:Name="TB_Cookies" Height="25" FontSize="15" Style="{StaticResource TextBox_Default}"/>
-                        <Button x:Name="Btn_清除" Margin="10" Width="60" Height="25" Content="清除" FontSize="13" Style="{StaticResource BtnStyle_紅}" Click="Btn_清除_Click" HorizontalAlignment="Right"/>
-                    </Grid>
-                    
                 </Expander>
             </StackPanel>
             <Button x:Name="Btn_新增" Margin="0,0,0,23" HorizontalAlignment="Center" Width="125" VerticalAlignment="Bottom" FontSize="18" Content="確認" Style="{DynamicResource BtnStyle_綠}" Click="Button_Click"/>

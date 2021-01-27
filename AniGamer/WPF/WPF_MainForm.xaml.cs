@@ -16,8 +16,9 @@ using System.Threading;
 using System.IO;
 using System.Windows.Media;
 using System.Net;
-
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Security.Cryptography;
 
 namespace WPF
 {
@@ -27,9 +28,9 @@ namespace WPF
     public partial class WPF_MainForm : Window
     {
         List<Model.AnimeModel> VideoList { set; get; }
-       
+        Model.AnimeModel Baha;
         Thread TH;
-
+    
         public WPF_MainForm()
         {
             InitializeComponent();
@@ -55,7 +56,7 @@ namespace WPF
                             Local.AniDir = xDir.Element("Ani").Value;
                     }
                     if (xDir.Element("Q") != null) Local.Quality =  xDir.Element("Q").Value;
-                    if (xDir.Element("Cookies") != null) Local.CookiesSTR = xDir.Element("Cookies").Value;
+
 
                     XElement xProxy = xRoot.Element("Proxy");
                     if (xProxy != null && xProxy.HasElements)
@@ -188,13 +189,11 @@ namespace WPF
 
                 case "Btn_設定":
                     {
-                        //Border_遮幕.Visibility = Visibility.Visible;
-                        //WPF_文件設定 WPF = new WPF_文件設定();
-                        //WPF.ShowDialog();
-                        //Border_遮幕.Visibility = Visibility.Collapsed;
+                        Border_遮幕.Visibility = Visibility.Visible;
+                        WPF_文件設定 WPF = new WPF_文件設定();
+                        WPF.ShowDialog();
+                        Border_遮幕.Visibility = Visibility.Collapsed;
 
-                        Win_Web win = new Win_Web();
-                        win.Show();
                         break;
                     }
 
@@ -203,20 +202,6 @@ namespace WPF
                         System.Diagnostics.Process prc = new System.Diagnostics.Process();
                         prc.StartInfo.FileName = Local.AniDir;
                         prc.Start();
-
-                        //string path = @"C:\Users\sakur\AppData\Local\Google\Chrome\User Data\Default\Cookies";
-                        //SQLiteConnection connection = new System.Data.SQLite.SQLiteConnection("Data Source = " + path);
-                        //connection.Open();
-                        //string commandText = @"select * from cookies where host_key like '%gamer.com.tw%'";
-                       //System.Data.SQLite.SQLiteCommand command = new System.Data.SQLite.SQLiteCommand(commandText, connection);
-                       ///command.ExecuteNonQuery();
-                       ////DataTable myDataTable = new DataTable();
-                        //
-                        //SQLiteDataAdapter da = new SQLiteDataAdapter(commandText, connection);
-                        //DataSet ds = new DataSet();
-                        //ds.Clear();
-                        //da.Fill(ds);
-                        //DataTable dataTable = ds.Tables[0];
 
                         break;
                     }
@@ -308,11 +293,10 @@ namespace WPF
         {
             if (TB_搜尋.Text.Length == 5 || TB_搜尋.Text.Length > 20)
             {
-                int Sn;
                 TB_Title.Text = "";
                 ListBox_話.Visibility = Visibility.Collapsed;
 
-                if (!int.TryParse(TB_搜尋.Text, out Sn))
+                if (!int.TryParse(TB_搜尋.Text, out int Sn))
                 {
                     if (TB_搜尋.Text.Contains("sn="))
                     {
@@ -362,10 +346,12 @@ namespace WPF
                             ListBox_話.Items.Clear();
                             for (int i = 1; i < Lists.Count; i++)
                             {
-                                Button button = new Button();
-                                button.Tag = Lists[i];
-                                button.Content = "第" + i.ToString() + "話";
-                                button.Style = this.FindResource("Button_Span") as Style;
+                                Button button = new Button
+                                {
+                                    Tag = Lists[i],
+                                    Content = "第" + i.ToString() + "話",
+                                    Style = this.FindResource("Button_Span") as Style
+                                };
                                 button.Click += Button_Click1;
                                 ListBox_話.Items.Add(button);
                             }
@@ -458,12 +444,14 @@ namespace WPF
         {
             string T = ((Button)sender).Tag.ToString();
 
-            Model.AnimeModel Ani = new Model.AnimeModel();
-            Ani.SN = T.Split(':')[0];
-            Ani.Span = T.Split(':')[1];
-            Ani.Name = TB_Title.Text + '-' + T.Split(':')[1];
-            Ani.From = Model.WebFrom.Myself;
-            Ani.Status = "排隊中...";
+            Model.AnimeModel Ani = new Model.AnimeModel
+            {
+                SN = T.Split(':')[0],
+                Span = T.Split(':')[1],
+                Name = TB_Title.Text + '-' + T.Split(':')[1],
+                From = Model.WebFrom.Myself,
+                Status = "排隊中..."
+            };
 
             if (VideoList.Count > 0)
                 Ani.No = VideoList.Max(I => I.No) + 1;
@@ -534,18 +522,7 @@ namespace WPF
 
             try
             {
-                if (!String.IsNullOrWhiteSpace(Local.CookiesSTR))
-                {
-                    System.Net.CookieContainer cc = new System.Net.CookieContainer();
-                    foreach (var str in Local.CookiesSTR.Split(';'))
-                        cc.SetCookies(new Uri("https://ani.gamer.com.tw"), str);
-
-                    BahaRequest.Cookies = cc;
-                }else
-                {
-                    BahaRequest.Cookies = new CookieContainer();
-                }
-
+                BahaRequest.GetChromeCookies();
                 Baha.DeviceId = BahaRequest.GetDeviceId(Baha.SN);
 
                 if (Baha.DeviceId == "")
@@ -665,10 +642,12 @@ namespace WPF
 
                 Baha.Status = "轉檔中";
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
-                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-                startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                startInfo.FileName = "ffmpeg.exe";
-                startInfo.Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4";
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+                    FileName = "ffmpeg.exe",
+                    Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4"
+                };
                 process.StartInfo = startInfo;
                 process.Start();
                 process.WaitForExit();
@@ -695,7 +674,7 @@ namespace WPF
 
         }
 
-        Model.AnimeModel Baha;
+        
         void Anime1Download(object value)  //主下載功能 不要用主線程來執行
         {
 
@@ -818,10 +797,12 @@ namespace WPF
 
                 Baha.Status = "轉檔中";
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
-                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-                startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                startInfo.FileName = "ffmpeg.exe";
-                startInfo.Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4";
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+                    FileName = "ffmpeg.exe",
+                    Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4"
+                };
                 process.StartInfo = startInfo;
                 process.Start();
                 process.WaitForExit();
@@ -1018,10 +999,12 @@ namespace WPF
 
                 Baha.Status = "轉檔中";
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
-                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-                startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                startInfo.FileName = "ffmpeg.exe";
-                startInfo.Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4";
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+                    FileName = "ffmpeg.exe",
+                    Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4"
+                };
                 process.StartInfo = startInfo;
                 process.Start();
                 process.WaitForExit();
@@ -1049,8 +1032,10 @@ namespace WPF
 
         public static void DeleteSrcFolder(string file)
         {
-            DirectoryInfo fileInfo = new DirectoryInfo(file);
-            fileInfo.Attributes = FileAttributes.Normal & FileAttributes.Directory;
+            DirectoryInfo fileInfo = new DirectoryInfo(file)
+            {
+                Attributes = FileAttributes.Normal & FileAttributes.Directory
+            };
 
             File.SetAttributes(file, System.IO.FileAttributes.Normal);
             if (Directory.Exists(file))
@@ -1092,7 +1077,6 @@ namespace WPF
             XElement xDir = new XElement("Dir");
             xDir.Add(new XElement("Ani", Local.AniDir));
             xDir.Add(new XElement("Q", Local.Quality));
-            xDir.Add(new XElement("Cookies", Local.CookiesSTR));
             xRoot.Add(xDir);
 
             if (Local.ProxyIP != "")
