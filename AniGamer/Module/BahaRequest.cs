@@ -20,51 +20,57 @@ namespace Module
 
         static public void GetChromeCookies()
         {
-            string UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-            if (AesKey == null)
-            {
-                using (StreamReader r = new StreamReader(UserPath + @"\AppData\Local\Google\Chrome\User Data\Local State"))
-                {
-                    string json = r.ReadToEnd();
-                    dynamic array = JValue.Parse(json);
-                    dynamic crypt = array.os_crypt;
-                    string base64 = crypt.encrypted_key;
-                    var base64EncodedBytes = System.Convert.FromBase64String(base64);
-                    Byte[] Code = base64EncodedBytes.Skip(5).ToArray();
-                    AesKey = Module.DPAPI.Decrypt(Code, null, out string C);
-                }
-            }
-
-            string path = UserPath + @"\AppData\Local\Google\Chrome\User Data\Default\Cookies";
-            SQLiteConnection connection = new System.Data.SQLite.SQLiteConnection("Data Source = " + path);
-            connection.Open();
-            string commandText = @"select * from cookies where host_key like '%.gamer.com.tw%' ";
-            SQLiteCommand command = new SQLiteCommand(commandText, connection);
-            command.ExecuteNonQuery();
-            SQLiteDataAdapter da = new SQLiteDataAdapter(commandText, connection);
-            DataSet ds = new DataSet();
-            ds.Clear();
-            da.Fill(ds);
-            connection.Close();
-
-            DataTable DT = ds.Tables[0];
-            if(DT != null && DT.Rows.Count > 0 )
-            {
-                Cookies = new System.Net.CookieContainer();
-                foreach (DataRow Dr in DT.Rows)
-                {
-                    string Key = Dr.Field<string>("name");
-                    string val = AesGcm256.ChromeCookies(Dr.Field<byte[]>("encrypted_value") , AesKey);
-                    Cookies.SetCookies(new Uri("https://ani.gamer.com.tw"), Key +"="+ val);
-                }
-
-            }else
+            try
             {
                 Cookies = new CookieContainer();
+                string UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+        
+                 if (System.IO.File.Exists(UserPath + @"\AppData\Local\Google\Chrome\User Data\Local State"))
+                 {
+                     using (StreamReader r = new StreamReader(UserPath + @"\AppData\Local\Google\Chrome\User Data\Local State"))
+                     {
+                         string json = r.ReadToEnd();
+                         dynamic array = JValue.Parse(json);
+                         dynamic crypt = array.os_crypt;
+                         string base64 = crypt.encrypted_key;
+                         var base64EncodedBytes = System.Convert.FromBase64String(base64);
+                         Byte[] Code = base64EncodedBytes.Skip(5).ToArray();
+                         AesKey = Module.DPAPI.Decrypt(Code, null, out string C);
+                     }
+                 }
+                
+                string path = UserPath + @"\AppData\Local\Google\Chrome\User Data\Default\Cookies";
+
+                if (AesKey != null && System.IO.File.Exists(path))
+                {
+
+                    SQLiteConnection connection = new System.Data.SQLite.SQLiteConnection("Data Source = " + path);
+                    connection.Open();
+                    string commandText = @"select * from cookies where host_key like '%.gamer.com.tw%' ";
+                    SQLiteCommand command = new SQLiteCommand(commandText, connection);
+                    command.ExecuteNonQuery();
+                    SQLiteDataAdapter da = new SQLiteDataAdapter(commandText, connection);
+                    DataSet ds = new DataSet();
+                    ds.Clear();
+                    da.Fill(ds);
+                    connection.Close();
+
+                    DataTable DT = ds.Tables[0];
+                    if (DT != null && DT.Rows.Count > 0)
+                    {
+                        foreach (DataRow Dr in DT.Rows)
+                        {
+                            string Key = Dr.Field<string>("name");
+                            string val = AesGcm256.ChromeCookies(Dr.Field<byte[]>("encrypted_value"), AesKey);
+                            Cookies.SetCookies(new Uri("https://ani.gamer.com.tw"), Key + "=" + val);
+                        }
+
+                    }
+                }
             }
-
-
+            catch  { }
+            
         }
 
         static public WebProxy Proxy { set; get; }
