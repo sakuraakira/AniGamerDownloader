@@ -143,7 +143,11 @@
                     <TextBlock x:Name="TB_Title" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="32,80,0,0" Text=""/>
                     <StackPanel x:Name="Grid_List" Orientation="Horizontal" Margin="32,110,0,0">
                         <ListBox x:Name="ListBox_話" BorderThickness="0" SelectionMode="Single" Visibility="Collapsed">
-                            
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
                         </ListBox>
                         <DataGrid x:Name="DataGrid_清單" FontSize="15" BorderThickness="0" CanUserAddRows="False" CanUserReorderColumns="False" HeadersVisibility="Column" CanUserResizeColumns="False"  SelectionMode="Single" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" Focusable="False" CanUserResizeRows="False" GridLinesVisibility="None" Background="{x:Null}" IsTabStop="False" IsReadOnly="True" HorizontalAlignment="Left" Margin="0,0,0,0" Width="912">
                             <DataGrid.Resources>

@@ -114,6 +114,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Module\AesGcm.cs" />
+    <Compile Include="Module\EpisodeInfo.cs" />
+    <Compile Include="Module\SeasonInfo.cs" />
     <Compile Include="Module\DPAPI.cs" />
     <Compile Include="Module\HAnimeRequest.cs" />
     <Compile Include="Module\MyselfRequest.cs" />

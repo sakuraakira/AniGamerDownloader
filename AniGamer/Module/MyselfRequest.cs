@@ -6,6 +6,7 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Specialized;
+using AniGamer.Module;
 
 namespace Module
 {
@@ -75,14 +76,14 @@ namespace Module
             return result;
         }
 
-        static public List<String> GetTitle(String sn)
+        static public SeasonInfo GetTitle(String seasonId)
         {
             List<String> list = new List<string>();
             try
             {
 
                 Cookies = new CookieContainer();
-                HttpWebRequest request = HttpWebRequest.Create(@"https://myself-bbs.com/thread-" + sn + "-1-1.html") as HttpWebRequest;
+                HttpWebRequest request = HttpWebRequest.Create(@"https://myself-bbs.com/thread-" + seasonId + "-1-1.html") as HttpWebRequest;
                 request.Method = "GET";
                 request.ContentType = "application/x-www-form-urlencoded";
                 request.Timeout = 30000;
@@ -96,38 +97,37 @@ namespace Module
                 }
 
 
-                string result = "";
+                string respBody = "";
                 using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
                 {
                     using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                     {
                         Cookies = request.CookieContainer;
-                        result = sr.ReadToEnd();
-                        if (result != "" && result != null)
+                        respBody = sr.ReadToEnd();
+                        if (respBody == "" || respBody == null)
                         {
-
-                            Regex rx = new Regex("<title>(.*)</title>");
-                            MatchCollection m = rx.Matches(result);
-
-                            if (m.Count > 0)
-                            {
-                                string name = m[0].Value.Replace("<title>", "").Replace("</title>", "");
-                                list.Add(name.Remove(name.IndexOf("-")).Replace(" ", "").Replace("/", "_"));
-                                
-                                Regex rx2 = new Regex("data-href=\"(.*)\" target=\"_blank\" class=\"various");
-                                m = rx2.Matches(result);
-                                int i = 0;
-                                foreach(Match ss in m)
-                                {
-                                    i++;
-                                    string span = ss.Value.Replace("data-href=\"", "").Replace("\" target=\"_blank\" class=\"various", "").Replace("\r", "");
-                                    list.Add(sn +":" + i.ToString());
-                                }
-
-                                return list;
-                            }
+                            return null;
                         }
-                        return null;
+                        Regex titleRegex = new Regex("<title>(.*)</title>");
+                        Match titleMatch = titleRegex.Match(respBody);
+                        if (!titleMatch.Success)
+                        {
+                            return null;
+                        }
+                        String seasonName = titleMatch.Groups[1].Value;
+                        seasonName = seasonName.Remove(seasonName.IndexOf("-")).Replace(" ", "").Replace("/", "_");
+                        SeasonInfo season = new SeasonInfo(seasonId, seasonName);
+                                
+                        Regex episodeRegex = new Regex("<a[^<]*>([^<]+)</a>[^<]*<ul[^<]*<li[^<]*" + 
+                            "<a .*data-href=\"[^\"]*/play/[^/\"]+/(\\d+)\\s*\" target=\"_blank\" class=\"various");
+                        MatchCollection episodeMatches = episodeRegex.Matches(respBody);
+                        foreach(Match match in episodeMatches)
+                        {
+                            String episodeName = match.Groups[1].Value;
+                            String episodeId = match.Groups[2].Value;
+                            season.Episodes.Add(new EpisodeInfo(episodeId, episodeName));
+                        }
+                        return season;
                     }
                 }
                 
@@ -141,7 +141,7 @@ namespace Module
 
         static public String GetM3U8(String sn ,String no)
         {
-            HttpWebRequest request = NewRequset(@"https://v.myself-bbs.com/vpx/" + sn+ "/"+ no.PadLeft(3, '0'), sn);
+            HttpWebRequest request = NewRequset(@"https://v.myself-bbs.com/vpx/" + sn+ "/"+ no, sn);
 
             string result = "";
             using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)

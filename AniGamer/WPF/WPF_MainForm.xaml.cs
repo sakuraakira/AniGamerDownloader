@@ -19,6 +19,7 @@ using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
+using AniGamer.Module;
 
 namespace WPF
 {
@@ -339,19 +340,20 @@ namespace WPF
                         }
 
 
-                        List<String> Lists = MyselfRequest.GetTitle(s);
-                        TB_Title.Text = Lists[0];
-                        if (Lists.Count > 1)
+                        SeasonInfo season = MyselfRequest.GetTitle(s);
+                        TB_Title.Text = season.DisplayName;
+                        if (season.Episodes.Count > 0)
                         {
                             ListBox_話.Items.Clear();
-                            for (int i = 1; i < Lists.Count; i++)
+                            foreach (EpisodeInfo episode in season.Episodes)
                             {
                                 Button button = new Button
                                 {
-                                    Tag = Lists[i],
-                                    Content = "第" + i.ToString() + "話",
+                                    Tag = season.Id + ":" + episode.Id,
+                                    Content = episode.DisplayName,
                                     Style = this.FindResource("Button_Span") as Style
                                 };
+                                button.HorizontalContentAlignment = HorizontalAlignment.Left;
                                 button.Click += Button_Click1;
                                 ListBox_話.Items.Add(button);
                             }
