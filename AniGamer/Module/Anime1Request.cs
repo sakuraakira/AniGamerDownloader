@@ -6,6 +6,9 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Data.SQLite;
+using System.Data;
 
 namespace Module
 {
@@ -40,6 +43,66 @@ namespace Module
             }  
         }
 
+        static public byte[] AesKey;
+
+        static public void GetChromeCookies(string ValuePath)
+        {
+            try
+            {
+                Cookies = new CookieContainer();
+
+                string UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+
+                if (System.IO.File.Exists(UserPath + @"\AppData\Local\Google\Chrome\User Data\Local State"))
+                {
+                    using (StreamReader r = new StreamReader(UserPath + @"\AppData\Local\Google\Chrome\User Data\Local State"))
+                    {
+                        string json = r.ReadToEnd();
+                        dynamic array = JValue.Parse(json);
+                        dynamic crypt = array.os_crypt;
+                        string base64 = crypt.encrypted_key;
+                        var base64EncodedBytes = System.Convert.FromBase64String(base64);
+                        Byte[] Code = base64EncodedBytes.Skip(5).ToArray();
+                        AesKey = Module.DPAPI.Decrypt(Code, null, out string C);
+                    }
+                }
+
+                string path = UserPath + @"\AppData\Local\Google\Chrome\User Data\Default\Cookies";
+
+                if (AesKey != null && System.IO.File.Exists(path))
+                {
+
+                    SQLiteConnection connection = new System.Data.SQLite.SQLiteConnection("Data Source = " + path);
+                    connection.Open();
+                    string commandText = @"select * from cookies where host_key like '%v.anime1.me%' ";
+                    SQLiteCommand command = new SQLiteCommand(commandText, connection);
+                    command.ExecuteNonQuery();
+                    SQLiteDataAdapter da = new SQLiteDataAdapter(commandText, connection);
+                    DataSet ds = new DataSet();
+                    ds.Clear();
+                    da.Fill(ds);
+                    connection.Close();
+
+                    DataTable DT = ds.Tables[0];
+                    if (DT != null && DT.Rows.Count > 0)
+                    {
+                        foreach (DataRow Dr in DT.Rows)
+                        {
+                            if (Dr.Field<string>("path") != ValuePath) continue;
+                            string Key = Dr.Field<string>("name");
+                            string val = AesGcm256.ChromeCookies(Dr.Field<byte[]>("encrypted_value"), AesKey);
+                            Cookie cookie = new Cookie(Key, val, Dr.Field<string>("path"), Dr.Field<string>("host_key"));
+                            Cookies.Add(cookie);
+                        }
+
+                    }
+                }
+            }
+            catch { }
+
+        }
+
         public static HttpWebRequest NewRequset(String Url, string sn)
         {
             HttpWebRequest request = HttpWebRequest.Create(Url) as HttpWebRequest;
@@ -59,27 +122,10 @@ namespace Module
             return request;
         }
 
-        static String Request(string Url, string sn)
-        {
-            HttpWebRequest request = NewRequset(Url,sn);
-            string result = "";
-            using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
-            {
-                using (StreamReader sr = new StreamReader(response.GetResponseStream()))
-                {
-                    Cookies = request.CookieContainer;
-                    result = sr.ReadToEnd();
-                }
-                response.Close();
-            }
-            return result;
-        }
-
         static public String GetTitle(String sn)
         {
             try
             {
-                Cookies = new CookieContainer();
                 HttpWebRequest request = HttpWebRequest.Create(@"https://anime1.me/" + sn + "#acpwd-" +sn) as HttpWebRequest;
                 request.Method = "POST";
                 request.ContentType = "application/x-www-form-urlencoded";
@@ -88,27 +134,12 @@ namespace Module
                 request.Referer = @"https://anime1.me/" + sn;
                 request.Headers.Add("origin", @"https://anime1.me");
                 request.CookieContainer = Cookies;
-                //必須透過ParseQueryString()來建立NameValueCollection物件，之後.ToString()才能轉換成queryString
-                NameValueCollection postParams = System.Web.HttpUtility.ParseQueryString(string.Empty);
-                postParams.Add("acpwd-pass", "anime1.me");
-
-                if (Local.ProxyIP != "")
-                {
-                    request.Proxy = Proxy;
-                }
-
-                byte[] byteArray = Encoding.UTF8.GetBytes(postParams.ToString());
-                using (Stream reqStream = request.GetRequestStream())
-                {
-                    reqStream.Write(byteArray, 0, byteArray.Length);
-                }
-
                 string result = "";
                 using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
                 {
                     using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                     {
-                        Cookies = request.CookieContainer;
+                     
                         result = sr.ReadToEnd();
                         if (result != "" && result != null)
                         {
@@ -136,46 +167,47 @@ namespace Module
             }
         }
 
-        static public String SendPass()
-        {
-            HttpWebRequest request = HttpWebRequest.Create(@"https://anime1.me/category/2019%e5%b9%b4%e6%98%a5%e5%ad%a3/mix#acpwd-9274") as HttpWebRequest;
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.Timeout = 30000;
-            request.UserAgent = @"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
-            request.Referer = @"https://anime1.me/";
-            request.Headers.Add("origin", @"https://anime1.me");
-            request.UseDefaultCredentials = true;
-            if (Cookies == null) Cookies = new CookieContainer();
 
-            request.CookieContainer = Cookies;
+        //static public String SendPass()
+        //{
+        //    HttpWebRequest request = HttpWebRequest.Create(@"https://anime1.me/category/2019%e5%b9%b4%e6%98%a5%e5%ad%a3/mix#acpwd-9274") as HttpWebRequest;
+        //    request.Method = "POST";
+        //    request.ContentType = "application/x-www-form-urlencoded";
+        //    request.Timeout = 30000;
+        //    request.UserAgent = @"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
+        //    request.Referer = @"https://anime1.me/";
+        //    request.Headers.Add("origin", @"https://anime1.me");
+        //    request.UseDefaultCredentials = true;
+        //    if (Cookies == null) Cookies = new CookieContainer();
 
-            NameValueCollection postParams = System.Web.HttpUtility.ParseQueryString(string.Empty);
-            postParams.Add("acpwd-pass", "anime1.me");
+        //    request.CookieContainer = Cookies;
 
-            if (Local.ProxyIP != "")
-            {
-                request.Proxy = Proxy;
-            }
+        //    NameValueCollection postParams = System.Web.HttpUtility.ParseQueryString(string.Empty);
+        //    postParams.Add("acpwd-pass", "anime1.me");
+
+        //    if (Local.ProxyIP != "")
+        //    {
+        //        request.Proxy = Proxy;
+        //    }
 
             
-            byte[] byteArray = Encoding.UTF8.GetBytes(postParams.ToString());
-            using (Stream reqStream = request.GetRequestStream())
-            {
-                reqStream.Write(byteArray, 0, byteArray.Length);
-            }
+        //    byte[] byteArray = Encoding.UTF8.GetBytes(postParams.ToString());
+        //    using (Stream reqStream = request.GetRequestStream())
+        //    {
+        //        reqStream.Write(byteArray, 0, byteArray.Length);
+        //    }
 
-            string result = "";
-            using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
-            {
-                using (StreamReader sr = new StreamReader(response.GetResponseStream()))
-                {
-                    Cookies = request.CookieContainer;
-                    result = sr.ReadToEnd();
-                    return "";
-                }
-            }
-        }
+        //    string result = "";
+        //    using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+        //    {
+        //        using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+        //        {
+        //            Cookies = request.CookieContainer;
+        //            result = sr.ReadToEnd();
+        //            return "";
+        //        }
+        //    }
+        //}
 
         static public String GetM3U8(String sn)
         {
@@ -208,6 +240,14 @@ namespace Module
                             return name;
                         }
 
+                        rx = new Regex("source src=\"(.*)\" type");
+                        m = rx.Matches(result);
+                        if (m.Count > 0)
+                        {
+                            string name = m[0].Value.Replace("source src=\"", "").Replace("\" type", "");
+                            return name;
+                        }
+
                         return "";
                     }
                     return "";
@@ -224,7 +264,6 @@ namespace Module
             string fileName = Path.GetFileName(file.Name);
             using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
             {
-                Cookies = request.CookieContainer;
                 StreamWriter SW = new StreamWriter(file);
                 using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                 {
@@ -284,8 +323,8 @@ namespace Module
 
         static public String GetXMLSrc(String URL , string sn)
         {
+            
             HttpWebRequest request = NewRequset(URL, sn);
-
             string result = "";
             using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
             {

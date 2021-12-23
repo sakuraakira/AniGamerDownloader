@@ -95,7 +95,7 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <StackPanel Margin="0,0,18,0" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_系統版本" Text="版本 Silverlight v1.3"/>
+                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_系統版本" Text="版本 Silverlight v1.4"/>
                 </StackPanel>
             </Grid>
             <Grid x:Name="Grid_拖曳框" Margin="0,45,0,33" >

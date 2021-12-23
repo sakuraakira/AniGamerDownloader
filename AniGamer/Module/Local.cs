@@ -15,7 +15,7 @@ namespace Module
 
         #region 專案資訊
 
-        public static Decimal Ver = 1.0M; //目前系統版本
+        public static Decimal Ver = 1.4M; //目前系統版本
         public static String ProgramName = "";  //程式名稱    
 
         #endregion
