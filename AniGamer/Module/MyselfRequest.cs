@@ -6,6 +6,7 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Specialized;
+using System.IO.Compression;
 
 namespace Module
 {
@@ -57,22 +58,6 @@ namespace Module
             }
 
             return request;
-        }
-
-        static String Request(string Url, string sn)
-        {
-            HttpWebRequest request = NewRequset(Url,sn);
-            string result = "";
-            using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
-            {
-                using (StreamReader sr = new StreamReader(response.GetResponseStream()))
-                {
-                    Cookies = request.CookieContainer;
-                    result = sr.ReadToEnd();
-                }
-                response.Close();
-            }
-            return result;
         }
 
         static public List<String> GetTitle(String sn)
@@ -192,9 +177,11 @@ namespace Module
             {
                 Cookies = request.CookieContainer;
                 StreamWriter SW = new StreamWriter(file);
-                using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+                using (GZipStream g = new GZipStream(response.GetResponseStream(), CompressionMode.Decompress))
                 {
+                    StreamReader sr = new StreamReader(g);
                     Cookies = request.CookieContainer;
+                    
                     string line;
                     while ((line = sr.ReadLine()) != null)
                     {
@@ -213,11 +200,12 @@ namespace Module
                         }
                         SW.WriteLine(line);
                     }
-
+                    sr.Dispose();
                 }
 
                 SW.Dispose();
                 file.Close();
+                
                 return Key;
             }
         }

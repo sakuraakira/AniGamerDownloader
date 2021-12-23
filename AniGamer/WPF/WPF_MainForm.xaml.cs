@@ -19,6 +19,8 @@ using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
+using AniGamer.Module;
+using System.Text.RegularExpressions;
 
 namespace WPF
 {
@@ -96,7 +98,52 @@ namespace WPF
                 Grid_拖曳框.Background = new SolidColorBrush(BG);
             }
             catch { }
+        }
 
+        static public String GetTitle()
+        {
+            try
+            {
+                HttpWebRequest request = HttpWebRequest.Create(@"https://coinmarketcap.com/zh-tw/") as HttpWebRequest;
+                request.Method = "GET";
+                request.ContentType = "application/x-www-form-urlencoded";
+                request.Timeout = 30000;
+                request.UserAgent = @"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
+                request.Referer = @"https://coinmarketcap.com/zh-tw/" ;
+                request.Headers.Add("origin", @"https://coinmarketcap.com/zh-tw/");
+                string result = "";
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+                    {
+
+                        result = sr.ReadToEnd();
+                        if (result != "" && result != null)
+                        {
+                            Regex rx = new Regex("市值前 100 加密貨幣</h1>(.*)</p></div></div></div><div id=");
+                            MatchCollection m = rx.Matches(result);
+
+                            if (m.Count > 0)
+                            {
+                                string name = m[0].Value;
+                                string DelFont = name.Substring(17);
+                                string OkStr = DelFont.Remove(DelFont.IndexOf("。</p></div></div></div><div id="));
+                                return OkStr;
+
+                            }
+                            else
+                                return "";
+                        }
+                        return "";
+                    }
+                }
+
+            }
+            catch (Exception EX)
+            {
+                WPFMessageBox.Show("網路連線出現異常", EX.Message);
+                return "";
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -384,7 +431,7 @@ namespace WPF
 
                 if (TB_搜尋.Text.Contains("sn="))
                 {
-                    Ani.Name = BahaRequest.GetTitle(Ani.SN).Split('-')[0];
+                    Ani.Name = BahaRequest.GetTitle(Ani.SN);
                     Ani.From = Model.WebFrom.Baha;
                 }
                 else if (TB_搜尋.Text.Contains("hanime1.me"))
@@ -572,8 +619,8 @@ namespace WPF
                     處理下載();
                     return;
                 }
-
-
+                Baha.Url = Baha.Url.Remove(Baha.Url.IndexOf("playlist_basic.m3u8"));
+                string FileName = Baha.Res.Substring(Baha.Res.LastIndexOf('/') + 1);
                 Baha.Tmp = "Tmp\\tmp" + Baha.SN;
                 String Path = AppDomain.CurrentDomain.BaseDirectory + Baha.Tmp;
 
@@ -581,20 +628,27 @@ namespace WPF
                 {
                     Directory.CreateDirectory(Path);
                 }
+                
 
-
-                if (Baha.ChuckList == null || !File.Exists(Path + "\\" + Baha.Res)) // 如果己經有Chuck 就不用再次下載
+                if (Baha.ChuckList == null || !File.Exists(Path + "\\" + FileName)) // 如果己經有Chuck 就不用再次下載
                 {
-                    FileStream file = new FileStream(Path + "\\" + Baha.Res, FileMode.Create);
+                    FileStream file = new FileStream(Path + "\\" + FileName, FileMode.Create);
                     Baha.ChuckList = new List<string>();
-                    string KeyUri = BahaRequest.DownloadM3U8(Baha.Url.Replace("playlist.m3u8", Baha.Res), Baha.SN, file, Baha.ChuckList);
+                    Baha.Url = Baha.Url + Baha.Res;
+                    string KeyUri = BahaRequest.DownloadM3U8(Baha.Url , Baha.SN, file, Baha.ChuckList);
+                    if (KeyUri.Contains("\""))
+                    {
+                        KeyUri = KeyUri.Remove(KeyUri.IndexOf("\""));
+                    }
+                    
+                    FileStream fileKey = new FileStream(Path + "\\" + FileName + "key", FileMode.Create);
 
-                    FileStream fileKey = new FileStream(Path + "\\" + Baha.Res + "key", FileMode.Create);
-                    BahaRequest.Download(KeyUri, Baha.SN, fileKey);
+                    Baha.Url = Baha.Url.Remove(Baha.Url.LastIndexOf("/") + 1);
+                    BahaRequest.Download(Baha.Url+KeyUri, Baha.SN, fileKey);
                 }
 
 
-                String prefix = Baha.Url.Remove(Baha.Url.IndexOf("playlist.m3u8"));
+     
                 Baha.BarMax = Baha.ChuckList.Count;
                 Baha.Bar = 0;
 
@@ -620,8 +674,8 @@ namespace WPF
                 {
                     Baha.Bar++;
                     Baha.Status = string.Format("已下載 ({0}/{1})", Baha.Bar, Baha.BarMax);
-                    FileStream ChuckFile = new FileStream(Path + "\\" + Chuck.Remove(Chuck.IndexOf("?token=")), FileMode.Create);
-                    if (!BahaRequest.Download(prefix + Chuck, Baha.SN, ChuckFile))
+                    FileStream ChuckFile = new FileStream(Path + "\\" + Chuck, FileMode.Create);
+                    if (!BahaRequest.Download(Baha.Url + Chuck, Baha.SN, ChuckFile))
                     {
                         Baha.IsIng = false;
                         Baha.IsStop = true;
@@ -646,7 +700,7 @@ namespace WPF
                 {
                     WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
                     FileName = "ffmpeg.exe",
-                    Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4"
+                    Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + FileName + " -c copy \"" + Local.AniDir + "\\" + Baha.Name + ".mp4\""
                 };
                 process.StartInfo = startInfo;
                 process.Start();
@@ -664,7 +718,8 @@ namespace WPF
             }
             catch(Exception ex)
             {
-                WPFMessageBox.Show("出錯", ex.Message);
+                this.Dispatcher.Invoke(() => { WPFMessageBox.Show("出錯", ex.Message); });
+                
                 Baha.IsIng = false;
                 Baha.IsStop = true;
                 Baha.Status = "下載中出現錯誤...";
@@ -695,10 +750,11 @@ namespace WPF
 
             try
             {
-
+               
                 Baha.Status = "解析中";
                 //Anime1Request.SendPass();
                 Baha.Url = Anime1Request.GetM3U8(Baha.SN);
+               
                 if (Baha.Url.Contains("v.anime1.me"))
                 {
                     String Send = Anime1Request.GetXMLSrc(Baha.Url, Baha.SN);
@@ -708,8 +764,15 @@ namespace WPF
                         //Process proc = new Process();
                         //proc.StartInfo.FileName = "https:" + Src;
                         //proc.Start();
-                        using (WebClient webClient_ = new WebClient())
+                        using (CookieAwareWebClient webClient_ = new CookieAwareWebClient())
                         {
+                            string ValuePath = Src.Substring(Src.IndexOf("me/") + 2);
+                            Anime1Request.GetChromeCookies(ValuePath);
+                            webClient_.CookieContainer = Anime1Request.Cookies;
+                            if(webClient_.CookieContainer.Count <= 1)
+                            {
+                                Baha.Status = "Cookie載入失敗，請刷新Chrome";
+                            }
                             webClient_.DownloadProgressChanged += WebClient__DownloadProgressChanged;
                             webClient_.DownloadFileCompleted += WebClient__DownloadFileCompleted;
                             webClient_.DownloadFileTaskAsync("https:" + Src, AppDomain.CurrentDomain.BaseDirectory + "Tmp\\tmp" + Baha.SN +".mp4");
@@ -801,7 +864,7 @@ namespace WPF
                 {
                     WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
                     FileName = "ffmpeg.exe",
-                    Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4"
+                    Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy \"" + Local.AniDir + "\\" + Baha.Name + ".mp4\""
                 };
                 process.StartInfo = startInfo;
                 process.Start();
@@ -998,12 +1061,13 @@ namespace WPF
                 }
 
                 Baha.Status = "轉檔中";
+                string S = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy \"" + Local.AniDir + "\\" + Baha.Name.Replace("/", "") + ".mp4\"";
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo
                 {
                     WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
                     FileName = "ffmpeg.exe",
-                    Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/" + Baha.Res + " -c copy " + Local.AniDir + "\\" + Baha.Name + ".mp4"
+                    Arguments = S
                 };
                 process.StartInfo = startInfo;
                 process.Start();

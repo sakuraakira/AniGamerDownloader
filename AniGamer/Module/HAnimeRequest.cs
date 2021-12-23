@@ -191,6 +191,14 @@ namespace Module
                             return name;
                         }
 
+                        rx = new Regex("iframe src=\"https(.*)==\"");
+                        m = rx.Matches(result);
+                        if (m.Count > 0)
+                        {
+                            string name = m[0].Value.Replace("iframe src=\"", "").Replace("\"", "");
+                            return name;
+                        }
+
                         return "";
                     }
                     return "";

@@ -8,7 +8,8 @@ using System.Text.RegularExpressions;
 using System.Data.SQLite;
 using System.Data;
 using System.Linq;
-
+using System.Web;
+using Newtonsoft.Json;
 
 namespace Module
 {
@@ -41,14 +42,14 @@ namespace Module
                      }
                  }
                 
-                string path = UserPath + @"\AppData\Local\Google\Chrome\User Data\Default\Cookies";
+                string path = UserPath + @"\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies";
 
                 if (AesKey != null && System.IO.File.Exists(path))
                 {
 
                     SQLiteConnection connection = new System.Data.SQLite.SQLiteConnection("Data Source = " + path);
                     connection.Open();
-                    string commandText = @"select * from cookies where host_key like '%.gamer.com.tw%' ";
+                    string commandText = @"select * from cookies where host_key like '%gamer.com%' ";
                     SQLiteCommand command = new SQLiteCommand(commandText, connection);
                     command.ExecuteNonQuery();
                     SQLiteDataAdapter da = new SQLiteDataAdapter(commandText, connection);
@@ -64,7 +65,12 @@ namespace Module
                         {
                             string Key = Dr.Field<string>("name");
                             string val = AesGcm256.ChromeCookies(Dr.Field<byte[]>("encrypted_value"), AesKey);
+                            if (val.Contains("{"))
+                            {
+                                val = "";
+                            }
                             Cookie cookie = new Cookie(Key, val, Dr.Field<string>("path"), Dr.Field<string>("host_key"));
+                            
                             //Cookies.SetCookies(new Uri("https://ani.gamer.com.tw"), Key + "=" + val);
                             Cookies.Add(cookie);
                         }
@@ -72,7 +78,10 @@ namespace Module
                     }
                 }
             }
-            catch  { }
+            catch (Exception ex)  
+            {
+            
+            }
             
         }
 
@@ -111,11 +120,11 @@ namespace Module
             request.Method = "GET";
             request.ContentType = "application/x-www-form-urlencoded";
             request.Timeout = 30000;
-            request.UserAgent = @"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
+            request.UserAgent = @"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36";
             request.Referer = @"https://ani.gamer.com.tw/animeVideo.php?sn=" + sn;
             request.Headers.Add("origin", @"https://ani.gamer.com.tw");
             request.CookieContainer = Cookies;
-
+           
             if( Local.ProxyIP != "")
             {
                 request.Proxy = Proxy;
@@ -157,7 +166,9 @@ namespace Module
 
                 if (m.Count > 0)
                 {
-                    return m[0].Value.Replace("<title>", "").Replace("</title>", "").Split('-')[0].Trim().Replace(" ", ",").Replace("/", "_").Replace(":", "：");
+                    String str = m[0].Value.Replace("<title>", "").Replace("</title>", "");
+                    str = HttpUtility.HtmlDecode(str);
+                    return str.Remove(str.IndexOf("線上看")).Trim().Replace("/", "_").Replace(":", "：");
                 }
                 else
                     return "";
@@ -263,13 +274,13 @@ namespace Module
 
         public static void StartAd(String sn)
         {
-            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=205025";
+            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=20200513";
             Request(STR, sn);
         }
 
         public static void SkipAd(String sn)
         {
-            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=205025&ad=end";
+            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=20200513&ad=end";
             Request(STR, sn);
         }
 
@@ -359,7 +370,7 @@ namespace Module
                 using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                 {
                     Cookies = request.CookieContainer;
-                    string line;
+                    string line ;
                     Boolean GetURI = false;
                     while ((line = sr.ReadLine()) != null)
                     {
@@ -369,10 +380,9 @@ namespace Module
                             line = line.Remove(line.IndexOf("URI=") + 4);
                             line += "\"" + fileName + "key\"";
                         }
-                        if (line.Contains("?token="))
+                        if (line.Contains(".ts"))
                         {
                             ChuckList.Add(line);
-                            line = line.Remove(line.IndexOf("?token="));
                         }
                         SW.WriteLine(line);
                     }
@@ -398,10 +408,11 @@ namespace Module
                     int size = 0;
                     do
                     {
-                        size = dataStream.Read(buffer, 0, buffer.Length);
+                        size = dataStream.Read(buffer,0, buffer.Length);
                         if (size > 0)
                             file.Write(buffer, 0, size);
                     } while (size > 0);
+                    dataStream.Close();
                     file.Close();
                     return true;
                 }
