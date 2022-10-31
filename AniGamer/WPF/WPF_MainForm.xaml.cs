@@ -385,6 +385,7 @@ namespace WPF
 
                 if (TB_搜尋.Text.Contains("sn="))
                 {
+                    BahaRequest.GetChromeCookies();
                     Ani.Name = BahaRequest.GetTitle(Ani.SN);
                     Ani.From = Model.WebFrom.Baha;
                 }
@@ -547,8 +548,9 @@ namespace WPF
                 BahaRequest.CheckLock(Baha.DeviceId, Baha.SN);
                 BahaRequest.Unlock(Baha.SN);
                 BahaRequest.Unlock(Baha.SN);
-                BahaRequest.StartAd(Baha.SN);
-                for (int i = 25; i > 0; i--)
+                string ad = BahaRequest.GetAd(Baha.SN);
+                BahaRequest.StartAd(Baha.SN,ad);
+                for (int i = 30; i > 0; i--)
                 {
                     Baha.Status = "等待" + i.ToString() + "秒跳過廣告...";
                     if (!VideoList.Contains(Baha))
@@ -558,12 +560,20 @@ namespace WPF
                     }
                     Thread.Sleep(1000);
                 }
-                BahaRequest.SkipAd(Baha.SN);
+                BahaRequest.SkipAd(Baha.SN, ad);
 
                 Baha.Status = "解析中";
                 BahaRequest.VideoStart(Baha.SN);
                 BahaRequest.CheckNoAd(Baha.DeviceId, Baha.SN);
                 Baha.Url = BahaRequest.GetM3U8(Baha.DeviceId, Baha.SN);
+                if (Baha.Url == "")
+                {
+                    this.Dispatcher.BeginInvoke(new Action(() => { WPFMessageBox.Show("沒有權限取得M3U8，DeviceId：" + Baha.DeviceId + "，SN:" + Baha.SN); }));
+                    Baha.IsIng = false;
+                    Baha.IsStop = true;
+                    處理下載();
+                    return;
+                }
                 Baha.Res = BahaRequest.ParseMasterList(Baha.Url, Baha.SN, Baha.Quality);
                 if (Baha.Res == "")
                 {
@@ -706,26 +716,25 @@ namespace WPF
             {
                
                 Baha.Status = "解析中";
-                //Anime1Request.SendPass();
                 Baha.Url = Anime1Request.GetM3U8(Baha.SN);
                
-                if (Baha.Url.Contains("v.anime1.me"))
+                if (Baha.Url.StartsWith("v"))
                 {
-                    String Send = Anime1Request.GetXMLSrc(Baha.Url, Baha.SN);
-                    String Src = Anime1Request.CallAPI(Send);
+                    String Src = Anime1Request.CallAPI(Baha.Url.Substring(1));
                     if (Src.Contains(".mp4"))
                     {
-                        //Process proc = new Process();
-                        //proc.StartInfo.FileName = "https:" + Src;
-                        //proc.Start();
                         using (CookieAwareWebClient webClient_ = new CookieAwareWebClient())
                         {
                             string ValuePath = Src.Substring(Src.IndexOf("me/") + 2);
-                            Anime1Request.GetChromeCookies(ValuePath);
+                           // Anime1Request.GetChromeCookies(ValuePath);
+                            //webClient_.CookieContainer = Anime1Request.Cookies;
                             webClient_.CookieContainer = Anime1Request.Cookies;
-                            if(webClient_.CookieContainer.Count <= 1)
+                            if (webClient_.CookieContainer.Count <= 1)
                             {
+                                Baha.IsIng = false;
+                                Baha.IsStop = true;
                                 Baha.Status = "Cookie載入失敗，請刷新Chrome";
+                                return;
                             }
                             webClient_.DownloadProgressChanged += WebClient__DownloadProgressChanged;
                             webClient_.DownloadFileCompleted += WebClient__DownloadFileCompleted;
@@ -1033,8 +1042,8 @@ namespace WPF
             {
 
                 Baha.Status = "解析中";
-
-                Baha.Url = MyselfRequest.GetM3U8(Baha.SN , Baha.Span);
+                Baha.Url = "https://vpx.myself-bbs.com/" + Baha.SN + "/" + Baha.Span + "/720p.m3u8" ;
+                
 
                 if (Baha.Url.Contains("bbs.com/"))
                     Baha.Res = Baha.Url.Substring(Baha.Url.IndexOf("bbs.com/") + 8).Replace('/', '_');

@@ -10,6 +10,8 @@ using System.Data;
 using System.Linq;
 using System.Web;
 using Newtonsoft.Json;
+using Brotli;
+using System.IO.Compression;
 
 namespace Module
 {
@@ -115,14 +117,15 @@ namespace Module
         {
             HttpWebRequest request = HttpWebRequest.Create(Url) as HttpWebRequest;
             request.Method = "GET";
-            request.ContentType = "application/x-www-form-urlencoded";
+            //request.ContentType = "application/x-www-form-urlencoded";
             request.Timeout = 30000;
-            request.UserAgent = @"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36";
-            request.Referer = @"https://ani.gamer.com.tw/animeVideo.php?sn=" + sn;
+            request.UserAgent = @"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36";
+            request.Referer = @"https://ani.gamer.com.tw/";
             request.Headers.Add("origin", @"https://ani.gamer.com.tw");
             request.CookieContainer = Cookies;
-           
-            if( Local.ProxyIP != "")
+
+
+            if ( Local.ProxyIP != "")
             {
                 request.Proxy = Proxy;
             }
@@ -156,19 +159,38 @@ namespace Module
                 };
 
                 if (Proxy != null) x.Proxy = Proxy;
-                
-                string html = x.DownloadString(@"https://ani.gamer.com.tw/animeVideo.php?sn=" + sn);
-                Regex rx = new Regex("<title>(.*)</title>");
-                MatchCollection m = rx.Matches(html);
 
-                if (m.Count > 0)
+                string result = "";
+                HttpWebRequest request = NewRequset(@"https://api.gamer.com.tw/mobile_app/anime/v2/video.php?sn=" + sn, sn);
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
                 {
-                    String str = m[0].Value.Replace("<title>", "").Replace("</title>", "");
-                    str = HttpUtility.HtmlDecode(str);
-                    return str.Remove(str.IndexOf("線上看")).Trim().Replace("/", "_").Replace(":", "：");
+                    using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+                    {
+                        result = reader.ReadToEnd();
+                        Regex rx = new Regex("\"title\":\"(.*)\"},\"anime\"");
+                        MatchCollection m = rx.Matches(result);
+
+                        if (m.Count > 0)
+                        {
+                            String str = m[0].Value.Replace("\"title\":\"", "").Replace("\"},\"anime\"", "");
+                            if (!string.IsNullOrEmpty(str))
+                            {
+
+                                Regex rx2 = new Regex(@"\\u[0-9a-f]{4}");
+                                MatchCollection m2 = rx2.Matches(str);
+                                foreach (Match mat in m2)
+                                {
+                                    char Decode = (char)int.Parse(mat.Value.Substring(2, 4), System.Globalization.NumberStyles.HexNumber);
+                                    str = str.Replace(mat.Value, Decode.ToString());
+                                }
+                            }
+
+                            return str;
+                        }
+                        else
+                            return "";
+                    }
                 }
-                else
-                    return "";
             }
             catch (Exception EX)
             {
@@ -179,8 +201,6 @@ namespace Module
 
         static public String GetDeviceId(String sn)
         {
-            
-            
             HttpWebRequest request = NewRequset(@"https://ani.gamer.com.tw/ajax/getdeviceid.php?id=", sn);
             using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
             {
@@ -203,7 +223,6 @@ namespace Module
                 }
             }
         }
-
 
         public static bool GainAccess(String rid, String sn)
         {
@@ -269,15 +288,15 @@ namespace Module
             return re;
         }
 
-        public static void StartAd(String sn)
+        public static void StartAd(String sn ,string AD)
         {
-            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=20200513";
+            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s="+ AD;
             Request(STR, sn);
         }
 
-        public static void SkipAd(String sn)
+        public static void SkipAd(String sn,string AD)
         {
-            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=20200513&ad=end";
+            string STR = @"https://ani.gamer.com.tw/ajax/videoCastcishu.php?sn=" + sn + "&s=" + AD +"&ad=end";
             Request(STR, sn);
         }
 
@@ -297,6 +316,36 @@ namespace Module
         {
             string STR = @"https://ani.gamer.com.tw/ajax/videoStart.php?sn=" + sn;
             Request(STR, sn);
+        }
+
+        static public String GetAd(String sn)
+        {
+            HttpWebRequest request = NewRequset(@"https://i2.bahamut.com.tw/JS/ad/animeVideo2.js?v=" + DateTime.Now.ToString("yyyyMMddHH"),sn);
+
+            using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+            {
+                using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+                {
+                    Cookies = request.CookieContainer;
+                    string result = sr.ReadToEnd();
+                    if (result != "" && result != null)
+                    {
+                        Regex rx = new Regex("php\\?id=([0-9]{6})");
+                        MatchCollection m = rx.Matches(result);
+
+                        if (m.Count > 0)
+                        {
+                            String str = m[0].Value.Replace("php?id=", "");
+                      
+                            return str;
+                        }
+                        else
+                            return "";
+                    }
+                    return "";
+                }
+            }
+
         }
 
         static public String GetM3U8(String rid, String sn)

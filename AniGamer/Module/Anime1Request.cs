@@ -68,7 +68,7 @@ namespace Module
                     }
                 }
 
-                string path = UserPath + @"\AppData\Local\Google\Chrome\User Data\Default\Cookies";
+                string path = UserPath + @"\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies";
 
                 if (AesKey != null && System.IO.File.Exists(path))
                 {
@@ -99,7 +99,12 @@ namespace Module
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                string s = ex.Message;
+            
+            
+            }
 
         }
 
@@ -240,12 +245,12 @@ namespace Module
                             return name;
                         }
 
-                        rx = new Regex("source src=\"(.*)\" type");
+                        rx = new Regex("data-apireq=\"(.*)\" data-vid=");
                         m = rx.Matches(result);
                         if (m.Count > 0)
                         {
-                            string name = m[0].Value.Replace("source src=\"", "").Replace("\" type", "");
-                            return name;
+                            string name =  m[0].Value.Replace("data-apireq=\"", "").Replace("\" data-vid=", "");
+                            return "v" + name;
                         }
 
                         return "";
@@ -370,7 +375,7 @@ namespace Module
             }
 
 
-            byte[] byteArray = Encoding.UTF8.GetBytes(d);
+            byte[] byteArray = Encoding.UTF8.GetBytes("d="+d);
             using (Stream reqStream = request.GetRequestStream())
             {
                 reqStream.Write(byteArray, 0, byteArray.Length);
@@ -381,19 +386,44 @@ namespace Module
             {
                 using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                 {
-                    Cookies = request.CookieContainer;
+                    Cookies = new CookieContainer();
+                    for (int i = 0; i < response.Headers.Count; i++)
+                    {
+                        string name = response.Headers.GetKey(i);
+                        string value = response.Headers.Get(i);
+                        if (name == "Set-Cookie")
+                        {
+                            Match match = Regex.Match(value, "e=(.+?);");
+                            if (match.Captures.Count > 0)
+                            {
+                                Cookies.Add(new Cookie(match.Value.Split('=')[0], match.Value.Split('=')[1].Trim(';'), "/", request.Host));
+                            }
+                            match = Regex.Match(value, ",h=(.+?);");
+                            if (match.Captures.Count > 0)
+                            {
+                                    Cookies.Add(new Cookie(match.Value.Split('=')[0].Trim(','), match.Value.Split('=')[1].Trim(';'), "/", request.Host));
+                            }
+                            match = Regex.Match(value, "p=(.+?);");
+                            if (match.Captures.Count > 0)
+                            {
+                               Cookies.Add(new Cookie(match.Value.Split('=')[0], match.Value.Split('=')[1].Trim(';'), "/", request.Host));
+                            }
+                        }
+                    }
+
                     result = sr.ReadToEnd();
                     if (result != "" && result != null)
                     {
                         JObject obj = JObject.Parse(result);
                         foreach (var x in obj)
                         {
-                            if (x.Key == "l")
+                            if (x.Key == "s")
                             {
-  
-                                         return x.Value.ToString();
-                                        
-               
+                                var match = Regex.Matches(x.Value.ToString(), "//(.+?)mp4");
+                                if (match.Count > 0)
+                                {
+                                    return match[0].Value;
+                                }
                             }
                         }
                     }

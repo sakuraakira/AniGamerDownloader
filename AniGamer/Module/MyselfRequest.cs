@@ -106,7 +106,7 @@ namespace Module
                                 {
                                     i++;
                                     string span = ss.Value.Replace("data-href=\"", "").Replace("\" target=\"_blank\" class=\"various", "").Replace("\r", "");
-                                    list.Add(sn +":" + i.ToString());
+                                    list.Add(sn +":" + span.Remove(0,span.LastIndexOf("/")+1));
                                 }
 
                                 return list;
@@ -177,31 +177,27 @@ namespace Module
             {
                 Cookies = request.CookieContainer;
                 StreamWriter SW = new StreamWriter(file);
-                using (GZipStream g = new GZipStream(response.GetResponseStream(), CompressionMode.Decompress))
+                StreamReader sr = new StreamReader(response.GetResponseStream());
+                string line;
+                while ((line = sr.ReadLine()) != null)
                 {
-                    StreamReader sr = new StreamReader(g);
-                    Cookies = request.CookieContainer;
-                    
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
+                    if (line.Contains("https://") )
                     {
-                        if (line.Contains("https://") )
-                        {
-                            ChuckList.Add(line);
-                            if(line.Contains("/"))
-                            line = line.Substring(line.LastIndexOf("/") + 1);
-                        }
-                        else
-                        {
-                            if( line.Contains(".ts") )
-                            {
-                                ChuckList.Add(Key + line);
-                            }
-                        }
-                        SW.WriteLine(line);
+                        ChuckList.Add(line);
+                        if(line.Contains("/"))
+                        line = line.Substring(line.LastIndexOf("/") + 1);
                     }
-                    sr.Dispose();
+                    else
+                    {
+                        if( line.Contains(".ts") )
+                        {
+                            ChuckList.Add(Key + line);
+                        }
+                    }
+                    SW.WriteLine(line);
                 }
+                sr.Dispose();
+                
 
                 SW.Dispose();
                 file.Close();
