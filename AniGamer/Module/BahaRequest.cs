@@ -12,6 +12,8 @@ using System.Web;
 using Newtonsoft.Json;
 using Brotli;
 using System.IO.Compression;
+using System.Windows.Input;
+using System.Windows.Markup;
 
 namespace Module
 {
@@ -20,13 +22,13 @@ namespace Module
         static public byte[] AesKey;
         static public CookieContainer Cookies { set; get; }
 
-
-        static public void GetChromeCookies()
+        static public string GetChromeCookies()
         {
             try
             {
-                Cookies = new CookieContainer(40);
-              
+                Cookies = new CookieContainer(100,100,1024*8);
+
+
                 string UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         
@@ -43,44 +45,48 @@ namespace Module
                          AesKey = Module.DPAPI.Decrypt(Code, null, out string C);
                      }
                  }
-                
+
+                string CHROME_COOKIE_PATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Google\Chrome\User Data\Default\Network\Cookies");
                 string path = UserPath + @"\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies";
 
                 if (AesKey != null && System.IO.File.Exists(path))
                 {
 
-                    SQLiteConnection connection = new System.Data.SQLite.SQLiteConnection("Data Source = " + path);
+                    SQLiteConnection connection = new SQLiteConnection("Data Source = " + path );
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = @"select * from cookies where host_key like '%gamer.com%' ";
                     connection.Open();
-                    string commandText = @"select * from cookies where host_key like '%gamer.com%' ";
-                    SQLiteCommand command = new SQLiteCommand(commandText, connection);
-                    command.ExecuteNonQuery();
-                    SQLiteDataAdapter da = new SQLiteDataAdapter(commandText, connection);
-                    DataSet ds = new DataSet();
-                    ds.Clear();
-                    da.Fill(ds);
-                    connection.Close();
+                    cmd.ExecuteNonQuery();
 
-                    DataTable DT = ds.Tables[0];
-                    if (DT != null && DT.Rows.Count > 0)
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        foreach (DataRow Dr in DT.Rows)
+                        var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
+                        while (reader.Read())
                         {
-                            string Key = Dr.Field<string>("name");
-                            string val = AesGcm256.ChromeCookies(Dr.Field<byte[]>("encrypted_value"), AesKey);
+                            string Key = (string)reader["name"];
+                            string val = AesGcm256.ChromeCookies((byte[])reader["encrypted_value"], AesKey);
                             if (val.Contains("{"))
                             {
                                 val = "";
                             }
-                            Cookie cookie = new Cookie(Key, val, Dr.Field<string>("path"), Dr.Field<string>("host_key"));
-                            
-                            //Cookies.SetCookies(new Uri("https://ani.gamer.com.tw"), Key + "=" + val);
+                            Cookie cookie = new Cookie(Key, val, (string)reader["path"], (string)reader["host_key"]);
                             Cookies.Add(cookie);
                         }
-
                     }
+                   
+                    connection.Close();
+                    
+                    return "1";
+                }
+                else
+                {
+                    return "無法取得AesKey";
                 }
             }
-            catch { }
+            catch (Exception e) 
+            {
+                return e.Message;
+            }
             
         }
 

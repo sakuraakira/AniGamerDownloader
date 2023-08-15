@@ -39,6 +39,13 @@
             <Setter Property="FontSize" Value="13.33"/>
         </Style>
     </Window.Resources>
+    <Window.InputScope>
+        <InputScope>
+            <InputScope.Names>
+                <InputScopeName NameValue="AlphanumericHalfWidth"/>
+            </InputScope.Names>
+        </InputScope>
+    </Window.InputScope>
     <Grid >
         <Grid x:Name="Grid_主框" >
             <Grid x:Name="Grid_標題框" Height="45" VerticalAlignment="Top" MouseLeftButtonDown="Grid_標題框_MouseLeftButtonDown">
@@ -95,7 +102,10 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <StackPanel Margin="0,0,18,0" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_系統版本" Text="版本 Silverlight v1.6"/>
+                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_登入" Text="" Margin="0,0,0,0"/>
+                    <Button Style="{StaticResource BtnStyle_白}" Click="Button_Click_2" Width="72" Height="28" VerticalAlignment="Center" Margin="12,0,12,0" FontSize="13">Cookies</Button>
+                    
+                    <TextBlock VerticalAlignment="Center" Foreground="#FCFCFC" HorizontalAlignment="Right" x:Name="TB_系統版本" Text="版本 Silverlight v1.7"/>
                 </StackPanel>
             </Grid>
             <Grid x:Name="Grid_拖曳框" Margin="0,45,0,33" >
@@ -103,6 +113,7 @@
                 <Grid x:Name="Grid_內容">
                     <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Height="56" Width="600" Margin="32,20">
                         <TextBox x:Name="TB_搜尋" FontSize="18"  Width="Auto" Margin="0,0,32,0" Height="44" Background="White" TextChanged="TB_搜尋_TextChanged" >
+
                             <TextBox.Template>
                                 <ControlTemplate TargetType="TextBox">
                                     <Border x:Name="border" BorderThickness="0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" CornerRadius="5">

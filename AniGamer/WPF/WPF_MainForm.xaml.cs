@@ -21,6 +21,7 @@ using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
 using AniGamer.Module;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace WPF
 {
@@ -119,7 +120,7 @@ namespace WPF
                     foreach (XElement xVideo in xRoot.Elements("Video"))
                     {
                         no++;
-                        VideoList.Add(new Model.AnimeModel() { No = no , From = xVideo.Attribute("From").Value == "0" ? Model.WebFrom.Baha : Model.WebFrom.Anime , SN = xVideo.Attribute("SN").Value, Name = xVideo.Attribute("Name").Value, Status = xVideo.Attribute("Status").Value });
+                        VideoList.Add(new Model.AnimeModel() { No = no , From =  (Model.WebFrom)int.Parse(xVideo.Attribute("From").Value) , SN = xVideo.Attribute("SN").Value,  Url = xVideo.Attribute("Url") != null ? xVideo.Attribute("Url").Value : "", Name = xVideo.Attribute("Name").Value, Status = xVideo.Attribute("Status").Value});
                     };
 
                     if (VideoList.Count > 0)
@@ -287,11 +288,12 @@ namespace WPF
                 this.Left = 300;
             }
             try { this.DragMove(); } catch { }
-        } 
+        }
 
 
         private void TB_搜尋_TextChanged(object sender, TextChangedEventArgs e)
         {
+
             if (TB_搜尋.Text.Length == 5 || TB_搜尋.Text.Length > 20)
             {
                 TB_Title.Text = "";
@@ -360,6 +362,34 @@ namespace WPF
                         TB_搜尋.Text = "";
                         return;
                     }
+                    else if (TB_搜尋.Text.Contains("gimy"))
+                    {
+                        if (TB_搜尋.Text.Contains("eps/"))
+                        {
+                            var s = TB_搜尋.Text.Substring(TB_搜尋.Text.IndexOf("eps/") + 4);
+                            s = s.Remove(s.IndexOf("-"));
+                            if (!int.TryParse(s, out Sn))
+                            {
+                                WPFMessageBox.Show("不是正確的連結格式。");
+                                return;
+                            }
+                        }
+                        else if (TB_搜尋.Text.Contains("play/"))
+                        {
+                            var ss = TB_搜尋.Text.Split('/');
+                            string s = ss[ss.Length - 1];
+                            if (string.IsNullOrWhiteSpace(s))
+                            {
+                                s = ss[ss.Length - 2];
+                            }
+                            s = s.Remove(s.IndexOf("-"));
+                            if (!int.TryParse(s, out Sn))
+                            {
+                                WPFMessageBox.Show("不是正確的連結格式。");
+                                return;
+                            }
+                        }
+                    }
                     else
                     {
                         WPFMessageBox.Show("不是正確的連結格式。");
@@ -377,7 +407,7 @@ namespace WPF
                     {
                         System.Net.ServicePointManager.Expect100Continue = false;
                         BahaRequest.Proxy.UseDefaultCredentials = true;
-                        BahaRequest.Proxy.Credentials =  new System.Net.NetworkCredential(Local.ProxyUser, Local.ProxyPass);
+                        BahaRequest.Proxy.Credentials = new System.Net.NetworkCredential(Local.ProxyUser, Local.ProxyPass);
                     }
                 }
 
@@ -385,7 +415,12 @@ namespace WPF
 
                 if (TB_搜尋.Text.Contains("sn="))
                 {
-                    BahaRequest.GetChromeCookies();
+
+                    if (BahaRequest.Cookies == null || BahaRequest.Cookies.Count < 15)
+                    {
+                        WPFMessageBox.Show("Cookies未設定");
+                        return;
+                    }
                     Ani.Name = BahaRequest.GetTitle(Ani.SN);
                     Ani.From = Model.WebFrom.Baha;
                 }
@@ -393,7 +428,13 @@ namespace WPF
                 {
                     Ani.Name = HAnimeRequest.GetTitle(Ani.SN);
                     Ani.From = Model.WebFrom.HAnime;
-                    
+
+                }
+                else if (TB_搜尋.Text.Contains("gimy"))
+                {
+                    Ani.Url = TB_搜尋.Text;
+                    Ani.Name = GimyRequest.GetTitle(Ani.Url);
+                    Ani.From = Model.WebFrom.Gimy;
                 }
                 else
                 {
@@ -406,7 +447,7 @@ namespace WPF
                 {
                     return;
                 }
-                if(Ani.Name == "巴哈姆特電玩資訊站")
+                if (Ani.Name == "巴哈姆特電玩資訊站")
                 {
                     WPFMessageBox.Show("找不到SN為" + Ani.SN + "的影片資料。");
                     return;
@@ -414,16 +455,16 @@ namespace WPF
 
                 if (VideoList.Where(I => I.SN == Ani.SN).Count() > 0)
                 {
-                    WPFMessageBox.Show("此影片 "+ Ani.Name + " 己經在清單中...");
+                    WPFMessageBox.Show("此影片 " + Ani.Name + " 己經在清單中...");
                     return;
                 }
 
-                if(File.Exists(Local.AniDir + "\\" + Ani.Name + ".mp4"))
+                if (File.Exists(Local.AniDir + "\\" + Ani.Name + ".mp4"))
                 {
-                   if( WPFMessageBox.Show("在下載資料夾裡己經有同樣名稱為 " + Ani.Name + " 的影片，是否要重新下載?"　,WPFMessageBoxButton.YesNo) == WPFMessageBoxResult.No)
+                    if (WPFMessageBox.Show("在下載資料夾裡己經有同樣名稱為 " + Ani.Name + " 的影片，是否要重新下載?", WPFMessageBoxButton.YesNo) == WPFMessageBoxResult.No)
                         return;
                 }
-                      
+
                 Ani.Status = "排隊中...";
 
                 if (VideoList.Count > 0)
@@ -500,6 +541,11 @@ namespace WPF
                     TH = new Thread(new ParameterizedThreadStart(HAnimeDownload));
                     TH.Start(Ani);
                 }
+                else if (Ani.From == Model.WebFrom.Gimy)
+                {
+                    TH = new Thread(new ParameterizedThreadStart(GimyDownload));
+                    TH.Start(Ani);
+                }
             }
         }
 
@@ -524,9 +570,7 @@ namespace WPF
 
             try
             {
-                BahaRequest.GetChromeCookies();
                 Baha.DeviceId = BahaRequest.GetDeviceId(Baha.SN);
-
                 if (Baha.DeviceId == "")
                 {
                     Baha.Status = "無法取得DeviceId";
@@ -563,9 +607,11 @@ namespace WPF
                 BahaRequest.SkipAd(Baha.SN, ad);
 
                 Baha.Status = "解析中";
-                BahaRequest.VideoStart(Baha.SN);
-                BahaRequest.CheckNoAd(Baha.DeviceId, Baha.SN);
+                
+               // BahaRequest.CheckNoAd(Baha.DeviceId, Baha.SN);
+                BahaRequest.Unlock(Baha.SN);
                 Baha.Url = BahaRequest.GetM3U8(Baha.DeviceId, Baha.SN);
+                BahaRequest.VideoStart(Baha.SN);
                 if (Baha.Url == "")
                 {
                     this.Dispatcher.BeginInvoke(new Action(() => { WPFMessageBox.Show("沒有權限取得M3U8，DeviceId：" + Baha.DeviceId + "，SN:" + Baha.SN); }));
@@ -726,8 +772,6 @@ namespace WPF
                         using (CookieAwareWebClient webClient_ = new CookieAwareWebClient())
                         {
                             string ValuePath = Src.Substring(Src.IndexOf("me/") + 2);
-                           // Anime1Request.GetChromeCookies(ValuePath);
-                            //webClient_.CookieContainer = Anime1Request.Cookies;
                             webClient_.CookieContainer = Anime1Request.Cookies;
                             if (webClient_.CookieContainer.Count <= 1)
                             {
@@ -996,6 +1040,122 @@ namespace WPF
             }
         }
 
+        void GimyDownload(object value)  //主下載功能 不要用主線程來執行
+        {
+
+            Baha = (Model.AnimeModel)value;
+            Baha.IsIng = true;
+
+            if (Local.ProxyIP != "" && Local.ProxyPort != 0) //如果有設定Proxy 
+            {
+                GimyRequest.Proxy = new System.Net.WebProxy(Local.ProxyIP, Local.ProxyPort);
+
+                if (Local.ProxyUser != "")
+                {
+                    System.Net.ServicePointManager.Expect100Continue = false;
+                    GimyRequest.Proxy.UseDefaultCredentials = true;
+                    GimyRequest.Proxy.Credentials = new System.Net.NetworkCredential(Local.ProxyUser, Local.ProxyPass);
+                }
+            }
+
+            try
+            {
+                Baha.Status = "解析中";
+                Baha.Url = GimyRequest.GetM3U8(Baha.Url);
+                if(Baha.Url.Contains("index"))
+                    Baha.Url = GimyRequest.GetKeyM3U8(Baha.Url);
+                Baha.Tmp = "Tmp\\tmp" + Baha.SN;
+                String Path = AppDomain.CurrentDomain.BaseDirectory + Baha.Tmp;
+
+                if (!Directory.Exists(Path))
+                {
+                    Directory.CreateDirectory(Path);
+                }
+                if (Baha.ChuckList == null) // 如果己經有Chuck 就不用再次下載
+                {
+                    FileStream file = new FileStream(Path + "\\index.m3u8", FileMode.Create);
+                    Baha.ChuckList = new List<string>();
+                    string KeyUri = GimyRequest.DownloadM3U8(Baha.Url, file, Baha.ChuckList);
+                }
+
+
+                String prefix = Baha.Url.Remove(Baha.Url.LastIndexOf("/"));
+                Baha.BarMax = Baha.ChuckList.Count;
+                Baha.Bar = 0;
+
+                String[] Files = Directory.GetFiles(Path);
+                if (Files != null && Files.Length > 3)  //如果有暫存檔案 , Chuck移除減少下載
+                {
+                    Baha.ChuckList.Count();
+                    foreach (String file in Files)
+                    {
+                        if (!file.EndsWith(".ts")) continue;
+                        var q = Baha.ChuckList.Where(I => I.Substring(I.LastIndexOf("/") + 1) == System.IO.Path.GetFileName(file));
+                        if (q.Count() > 0)
+                        {
+                            Baha.ChuckList.Remove(q.First());
+                            Baha.Bar++;
+                        }
+
+                    }
+
+                }
+
+                foreach (string Chuck in Baha.ChuckList)
+                {
+                    Baha.Bar++;
+                    Baha.Status = string.Format("已下載 ({0}/{1})", Baha.Bar, Baha.BarMax);
+                    FileStream ChuckFile = new FileStream(Path + "\\" + Chuck.Substring(Chuck.LastIndexOf("/") + 1), FileMode.Create);
+                    if (!HAnimeRequest.Download(Chuck, Baha.SN, ChuckFile))
+                    {
+                        Baha.IsIng = false;
+                        Baha.IsStop = true;
+                        this.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            WPFMessageBox.Show("網路異常...");
+                        }));
+                        return;
+                    }
+
+                    if (!VideoList.Contains(Baha))
+                    {
+                        DeleteSrcFolder(Path);
+                        處理下載();
+                        return;
+                    }
+                }
+
+                Baha.Status = "轉檔中";
+                System.Diagnostics.Process process = new System.Diagnostics.Process();
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+                    FileName = "ffmpeg.exe",
+                    Arguments = " -allowed_extensions ALL -y -i " + Baha.Tmp + "/index.m3u8 -c copy \"" + Local.AniDir + "\\" + Baha.Name + ".mp4\""
+                };
+                process.StartInfo = startInfo;
+                process.Start();
+                process.WaitForExit();
+                if (process != null)
+                {
+                    process.Close();
+                }
+
+                Baha.Status = "下載完成";
+                Baha.IsIng = false;
+                Baha.IsOk = true;
+                DeleteSrcFolder(Path);
+                處理下載();
+            }
+            catch(Exception ex)
+            {
+                Baha.IsIng = false;
+                Baha.IsStop = true;
+                Baha.Status = "下載中出現錯誤...";
+                return;
+            }
+        }
+
         private void WebClient__DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
 
@@ -1228,7 +1388,7 @@ namespace WPF
             XElement xRoot = xDoc.Root;
             foreach(var Baha in VideoList.Where(I=> !I.IsOk))
             {
-                XElement xBaha = new XElement("Video", new XAttribute("From", (int)Baha.From), new XAttribute("SN", Baha.SN) , new XAttribute("Name" , Baha.Name) , new XAttribute("Status", Baha.Status ) );
+                XElement xBaha = new XElement("Video", new XAttribute("From", (int)Baha.From), new XAttribute("SN", Baha.SN) , new XAttribute("Url",Baha.Url == null ? "" : Baha.Url) , new XAttribute("Name" , Baha.Name) , new XAttribute("Status", Baha.Status ) );
                 xRoot.Add(xBaha);
             }
             xDoc.Save(Local.ListFile);
@@ -1247,6 +1407,33 @@ namespace WPF
         private void TB_Anime1_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             System.Diagnostics.Process.Start(@"https://anime1.me/");
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            if (!Clipboard.ContainsData(DataFormats.Text)) // 判斷是否有 DataFormats.Text 格式的資料
+            {
+                WPFMessageBox.Show($"請先複製Cookies再點擊此。");
+                return;
+            }
+
+            String CookieStr = Clipboard.GetText();
+            if (CookieStr.Length == 0) return;
+            if (!CookieStr.Contains(";")) return;
+            CookieContainer cookiecontainer = new CookieContainer();
+            string[] cookies = CookieStr.Split(';');
+            foreach (string cookie in cookies)
+            {
+                cookiecontainer.SetCookies(new Uri("https://ani.gamer.com.tw/"), cookie);
+            }
+            BahaRequest.Cookies = cookiecontainer;
+
+            var Cook = BahaRequest.Cookies.GetCookies(new Uri("https://ani.gamer.com.tw"));
+            if (Cook != null)
+            {
+                WPFMessageBox.Show($"已解析{Cook.Count}筆Cookies");
+                TB_登入.Text = "巴哈Cookies已載入";
+            }
         }
     }
 }

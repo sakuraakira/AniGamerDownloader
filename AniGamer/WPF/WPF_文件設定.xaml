@@ -30,6 +30,10 @@
         </Grid>
         <Grid Margin="5,35,5,5" Background="White">
             <StackPanel HorizontalAlignment="Left" Margin="15,0,0,0" >
+               <!-- <StackPanel Orientation="Horizontal" Height="38" Margin="0,28,0,0">
+                    <Label Width="100" HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Padding="0,0,15,0" Content="Cookies" />
+                    <TextBox x:Name="TB_Cookies" FontSize="16" HorizontalAlignment="Left" Width="399" Margin="0,0,0,0" Height="32" Style="{DynamicResource TextBox_Default}" KeyDown="TB_Cookies_KeyDown"/>
+                </StackPanel> -->
                 <StackPanel Orientation="Horizontal" Height="38" Margin="0,28,0,0">
                     <Label Width="100" HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Padding="0,0,15,0" Content="影片品質" />
                     <ComboBox x:Name="CB_品質" HorizontalAlignment="Left" Width="129" Margin="0,0,0,0" Height="32" Template="{StaticResource ComboBox_白框}">

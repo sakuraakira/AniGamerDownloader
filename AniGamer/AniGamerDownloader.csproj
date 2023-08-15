@@ -119,6 +119,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Module\DPAPI.cs" />
+    <Compile Include="Module\GimyRequest.cs" />
     <Compile Include="Module\HAnimeRequest.cs" />
     <Compile Include="Module\MyselfRequest.cs" />
     <Compile Include="Module\Anime1Request.cs" />

@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Xml.Linq;
 using Module;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace WPF
 {
@@ -164,5 +165,27 @@ namespace WPF
             Grid_Main.Height = 382;
         }
 
+        private void TB_Cookies_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+               // if (TB_Cookies.Text.Length == 0) return;
+               // if (!TB_Cookies.Text.Contains(";")) return;
+               // String CookieStr = TB_Cookies.Text;
+               // CookieContainer cookiecontainer = new CookieContainer();
+               // string[] cookies = CookieStr.Split(';');
+               // foreach (string cookie in cookies)
+               // {
+               //     cookiecontainer.SetCookies(new Uri("https://ani.gamer.com.tw/"), cookie);
+               // }
+               // BahaRequest.Cookies = cookiecontainer;
+               //
+               // var Cook = BahaRequest.Cookies.GetCookies(new Uri("https://ani.gamer.com.tw"));
+               // if (Cook != null)
+               // {
+               //     WPFMessageBox.Show($"已解析{Cook.Count}筆Cookies");
+               // }
+            }
+        }
     }
 }
